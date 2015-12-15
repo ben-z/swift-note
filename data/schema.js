@@ -101,6 +101,7 @@ const NoteQuery = new GraphQLObjectType({
 const NoteMutation = new GraphQLObjectType({
   name: 'NoteMutation',
   fields: {
+    // @return: The created Note
     createNote: {
       type: NoteType,
       args: {
@@ -122,6 +123,39 @@ const NoteMutation = new GraphQLObjectType({
         let note = new Note(noteobj)
 
         return note.save()
+      }
+    },
+    // @return: The updated Note
+    updateNote: {
+      type: NoteType,
+      args: {
+        id: {
+          type: GraphQLString
+        },
+        title: {
+          type: GraphQLString
+        },
+        description: {
+          type: GraphQLString
+        },
+        tags: {
+          type: new GraphQLList(GraphQLString)
+        },
+        file_path: {
+          type: GraphQLString
+        }
+      },
+      resolve(paren,{id, title, description, tags, file_path},{fieldASTs}){
+         var projections = getProjection(fieldASTs[0]);
+         let updateObj = {}
+         if(title) updateObj.title = title;
+         if(description) updateObj.description = description;
+         if(tags) updateObj.tags = tags;
+         if(file_path) updateObj.file_path = file_path;
+         if(0 !== Object.keys(updateObj).length) updateObj.timestamp = Date();
+
+         return Note.findByIdAndUpdate(id,updateObj,
+           {new:true,upsert:true,select:projections});
       }
     },
     // @return: The removed Note
