@@ -1,0 +1,25 @@
+{
+  "name": "swiftnote",
+  "version": "0.0.1",
+  "description": "Take notes and store files on the go.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "notes"
+  ],
+  "author": "Ben Zhang",
+  "license": "MIT",
+  "dependencies": {
+    "react-dom": "~0.14.3",
+    "react": "~0.14.3",
+    "express": "~4.13.3",
+    "mongoose": "~4.3.1"
+  },
+  "devDependencies": {
+    "babel-core": "~6.3.17",
+    "babel-preset-es2015": "~6.3.13",
+    "babel-preset-react": "~6.3.13"
+  }
+}
