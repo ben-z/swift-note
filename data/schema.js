@@ -5,7 +5,8 @@ import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
+  GraphQLBoolean
 } from 'graphql';
 
 import Note from './note'
@@ -121,6 +122,18 @@ const NoteMutation = new GraphQLObjectType({
         let note = new Note(noteobj)
 
         return note.save()
+      }
+    },
+    // @return: The removed Note
+    removeNote: {
+      type: NoteType,
+      args: {
+        id: {
+          type: GraphQLString
+        }
+      },
+      resolve(parent, {id}) {
+        return Note.findByIdAndRemove(id)
       }
     }
   }
