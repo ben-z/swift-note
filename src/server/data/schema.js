@@ -16,7 +16,7 @@ import Note from './note'
  * @param  {Object} fieldASTs
  * @return {Project}
  */
-function getProjection (fieldASTs) {
+export function getProjection (fieldASTs) {
   return fieldASTs.selectionSet.selections.reduce((projections, selection) => {
     projections[selection.name.value] = 1;
 
@@ -119,7 +119,7 @@ const NoteMutation = new GraphQLObjectType({
         }
       },
       resolve(parent, noteobj) {
-        noteobj.timestamp = Date()
+        noteobj.timestamp = Date();
         let note = new Note(noteobj)
 
         return note.save()

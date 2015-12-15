@@ -11,7 +11,11 @@ let app = express()
 app.set('view engine', 'jade')
 
 // Initiate Database Connection
-mongoose.connect('mongodb://swiftnote:swiftnote@dogen.mongohq.com:10080/epsclubs');
+if(process.env.NODE_ENV !== 'test'){
+  const uri = process.env.MONGO_URI || 'mongodb://swiftnote:swiftnote@dogen.mongohq.com:10080/epsclubs';
+  console.log(`Mongo URI: ${uri}`);
+  mongoose.connect(uri);
+}
 
 app.get('/', (req, res)=>{
   res.render('index', {title: 'SwiftNote', message: 'This feature has not yet been implemented'});
@@ -48,3 +52,5 @@ let server = app.listen(8000, ()=>{
   console.log('\u0007');
   console.log(`server started on port ${server.address().port}`);
 });
+
+export default app;

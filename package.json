@@ -2,9 +2,12 @@
   "name": "swiftnote",
   "version": "0.0.1",
   "description": "Take notes and store files on the go.",
-  "main": "index.js",
+  "main": "src/server/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "js src/server/index.js",
+    "start_local": "MONGO_URI=mongodb://localhost/swiftnote npm start",
+    "test": "NODE_ENV=test mocha --compilers js:babel-core/register --require co-mocha $(find tests -name \"*.spec.js\")",
+    "seed": "MONGO_URI=mongodb://localhost/swiftnote js ./seed"
   },
   "keywords": [
     "notes"
