@@ -97,7 +97,37 @@ const NoteQuery = new GraphQLObjectType({
   }
 })
 
+const NoteMutation = new GraphQLObjectType({
+  name: 'NoteMutation',
+  fields: {
+    createNote: {
+      type: NoteType,
+      args: {
+        title: {
+          type: GraphQLString
+        },
+        description: {
+          type: GraphQLString
+        },
+        tags: {
+          type: new GraphQLList(GraphQLString)
+        },
+        file_path: {
+          type: GraphQLString
+        }
+      },
+      resolve(parent, noteobj) {
+        noteobj.timestamp = Date()
+        let note = new Note(noteobj)
+
+        return note.save()
+      }
+    }
+  }
+})
+
 
 export var Schema = new GraphQLSchema({
-  query: NoteQuery
+  query: NoteQuery,
+  mutation: NoteMutation
 });
