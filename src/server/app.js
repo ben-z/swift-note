@@ -8,6 +8,9 @@ import graphqlHTTP from 'express-graphql'
 import {Schema} from './data/schema.js'
 import browserify from 'browserify'
 import babelify from 'babelify'
+import React from 'react'
+import ReactDOMServer from 'react-dom/server'
+import ClientApp from '../client/app'
 
 let app = express()
 app.use(cookieParser())
@@ -23,7 +26,8 @@ if(process.env.NODE_ENV !== 'test'){
 }
 
 app.get('/', (req, res)=>{
-  res.render('index', {title: 'SwiftNote', message: 'This feature has not yet been implemented'});
+  let prerender = ReactDOMServer.renderToString(<ClientApp />);
+  res.render('index', {title: 'SwiftNote', message: 'This feature has not yet been implemented', prerender: prerender});
 })
 
 app.get('/login', (req,res)=>{
