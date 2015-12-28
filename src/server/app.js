@@ -1,4 +1,4 @@
-// Instirations: https://github.com/RisingStack/graphql-server
+// Inspirations: https://github.com/RisingStack/graphql-server
 
 import express from 'express'
 import mongoose from 'mongoose'
