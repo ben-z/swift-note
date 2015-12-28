@@ -1,13 +1,16 @@
 // Inspirations: https://github.com/RisingStack/graphql-server
 
 import express from 'express'
+import cookieParser from 'cookie-parser'
 import mongoose from 'mongoose'
 import Note from './data/note'
 import graphqlHTTP from 'express-graphql'
 import {Schema} from './data/schema.js'
 
 let app = express()
+app.use(cookieParser())
 
+app.set('views', __dirname + '/views')
 app.set('view engine', 'jade')
 
 // Initiate Database Connection
@@ -19,6 +22,24 @@ if(process.env.NODE_ENV !== 'test'){
 
 app.get('/', (req, res)=>{
   res.render('index', {title: 'SwiftNote', message: 'This feature has not yet been implemented'});
+})
+
+app.get('/login', (req,res)=>{
+  res.cookie('user','12345',{maxAge: 900000});
+  res.send('<a href="/graphql">back to graphql</a><br /><a href="/logout">logout</a>');
+})
+
+app.get('/logout', (req,res)=>{
+  res.clearCookie('user');
+  res.send('<a href="/graphql">back to graphql</a><br /><a href="/login">login</a>');
+})
+
+app.use('/graphql',(req,res,next)=>{
+  if (req.cookies.user==='12345') {
+    next();
+  }else{
+    res.redirect('/login')
+  }
 })
 
 app.use('/graphql',graphqlHTTP({
