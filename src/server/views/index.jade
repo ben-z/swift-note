@@ -3,5 +3,6 @@ html
     title!= title
   body
     h1!= message
-    #app!=prerender
+    #app!= prerender
+    script(id='props', type='text/json')!= props        
     script(type='text/javascript', src='app.js')

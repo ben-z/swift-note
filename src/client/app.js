@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import $ from 'jquery'
+import request from 'superagent'
 
 class App extends React.Component {
   constructor(props){
@@ -10,11 +10,7 @@ class App extends React.Component {
     }
     this._updateList = this._updateList.bind(this);
   }
-  _handleClick(e){
-    alert('hi');
-  }
   static fetchList(url='http://localhost:8000/graphql',callback){
-    console.log(url);
     let q = {query:`{
       notes{
         id
@@ -25,10 +21,11 @@ class App extends React.Component {
         file_path
       }
     }`};
-    $.get(url,q,(res)=>{
-      console.log(res.data);
-      callback(res.data)
-    })
+    request.get(url)
+      .query(q)
+      .end((err,res)=>{
+        callback(res.body.data)
+      })
   }
   _updateList(){
     this.constructor.fetchList(void 0,(data)=>{
@@ -43,7 +40,8 @@ class App extends React.Component {
 }
 
 if (typeof document !== 'undefined') {
-  ReactDOM.render(<App />, document.getElementById('app'));
+  let props = JSON.parse(document.getElementById('props').innerHTML);
+  ReactDOM.render(<App {...props}/>, document.getElementById('app'));
 }
 
 export default App

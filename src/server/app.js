@@ -26,8 +26,10 @@ if(process.env.NODE_ENV !== 'test'){
 }
 
 app.get('/', (req, res)=>{
-  let prerender = ReactDOMServer.renderToString(<ClientApp />);
-  res.render('index', {title: 'SwiftNote', message: 'This feature has not yet been implemented', prerender: prerender});
+  ClientApp.fetchList(void 0,(props)=>{
+    let prerender = ReactDOMServer.renderToString(<ClientApp {...props} />);
+    res.render('index', {title: 'SwiftNote', message: 'Work In Progress', prerender: prerender, props: JSON.stringify(props)});
+  })
 })
 
 app.get('/login', (req,res)=>{
