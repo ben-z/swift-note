@@ -41,7 +41,8 @@ app.get('/logout', (req,res)=>{
 })
 
 app.use('/graphql',(req,res,next)=>{
-  if (req.cookies.user==='12345') {
+  // if (req.cookies.user==='12345') {
+  if(true){ //TODO: new authentication method
     next();
   }else{
     res.redirect('/login')
