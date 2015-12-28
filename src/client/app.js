@@ -101,7 +101,9 @@ class App extends React.Component {
   render(){
     return (
       <div style={m(Theme.body)}>
-        {this._renderList(this.state.notes)}
+        <div style={m(Theme.wrapper)}>
+          {this._renderList(this.state.notes)}
+        </div>
       </div>
     )
   }
@@ -115,7 +117,7 @@ class NoteItem extends React.Component{
 
     return (
       <Panel data-id={this.props.id}>
-        <span style={m(Theme.panel.title)}>{this.props.title}</span>&nbsp;
+        <span style={m(Theme.panel.title)}>{this.props.title}</span>
         <span style={m(Theme.panel.date)}>{d_fromnow}</span>
         <div style={m(Theme.panel.icons)}>
           <Icon style={m(Theme.panel.icons.icon)} type="pencil" />
