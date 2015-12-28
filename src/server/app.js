@@ -11,6 +11,8 @@ import babelify from 'babelify'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import ClientApp from '../client/app'
+import objectAssign from 'object-assign'
+Object.assign = Object.assign || objectAssign
 
 let app = express()
 app.use(cookieParser())
@@ -54,6 +56,8 @@ app.use('/graphql',(req,res,next)=>{
 app.get('/app.js',(req,res)=>{
   browserify().add(__dirname+'/../client/app.js').transform(babelify).bundle().pipe(res);
 })
+
+app.use('/fonts', express.static(__dirname+'/../client/fonts'));
 
 app.use('/graphql',graphqlHTTP({
   schema: Schema,

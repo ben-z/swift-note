@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import request from 'superagent'
 import moment from 'moment'
+import Theme from './theme'
 
 function byString(o, s) {
     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
@@ -36,6 +37,30 @@ function filterOne(array,property,compareObj,i=0){
 //     {p:{c:3}}
 // ],'p.c',2));
 // => [{p:{c:1}},{p:{c:3}}]
+
+// filter function for Objects, similar to Array.prototype.filter
+Object.filter = function(obj, predicate) {
+    let result = {}, key;
+
+    for (key in obj) {
+        if (obj.hasOwnProperty(key) && predicate(obj[key])) {
+            result[key] = obj[key];
+        }
+    }
+
+    return result;
+}
+
+// Merges js stylesheets
+function m(){
+  let res = {}
+  for (let i = 0; i < arguments.length; ++i){
+    if (arguments[i]) {
+      Object.assign(res,Object.filter(arguments[i],val=>{return (typeof val !== 'object')}))
+    }
+  }
+  return res;
+}
 
 class App extends React.Component {
   constructor(props){
@@ -75,7 +100,7 @@ class App extends React.Component {
   }
   render(){
     return (
-      <div>
+      <div style={m(Theme.body)}>
         {this._renderList(this.state.notes)}
       </div>
     )
@@ -89,10 +114,14 @@ class NoteItem extends React.Component{
     const d_exact = d.format('LLLL');
 
     return (
-      <div data-id={this.props.id}>
-        {this.props.title}&nbsp;
-        {d_fromnow}
-      </div>
+      <Panel data-id={this.props.id}>
+        <span style={m(Theme.panel.title)}>{this.props.title}</span>&nbsp;
+        <span style={m(Theme.panel.date)}>{d_fromnow}</span>
+        <div style={m(Theme.panel.icons)}>
+          <Icon style={m(Theme.panel.icons.icon)} type="pencil" />
+          <Icon style={m(Theme.panel.icons.icon)} type="times" />
+        </div>
+      </Panel>
     )
   }
 }
@@ -104,6 +133,27 @@ NoteItem.propTypes = {
 }
 NoteItem.defaultProps = {
   title:''
+}
+
+class Panel extends React.Component{
+  render(){
+    return(
+      <div style={m(Theme.panel)} {...this.props}>{this.props.children}</div>
+    )
+  }
+}
+
+class Icon extends React.Component{
+  render(){
+    return(
+      <i className={`fa fa-${this.props.type} ${this.props.extra}`} {...this.props} />
+    )
+  }
+}
+
+Icon.propTypes = {
+  type: React.PropTypes.string.isRequired,
+  extra: React.PropTypes.string
 }
 
 if (typeof document !== 'undefined') {

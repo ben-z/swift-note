@@ -1,8 +1,67 @@
 html
   head
     title!= title
+    link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css')
+    style(type='text/css').
+      @font-face {
+        font-family: "wayfinder-icons";
+        font-style: normal;
+        font-weight: normal;
+        src: url("fonts/wayfinder-icons.eot");
+        src: url("fonts/wayfinder-icons.eot?#iefix") format("embedded-opentype"), url("fonts/wayfinder-icons.woff") format("woff"), url("fonts/wayfinder-icons.ttf") format("truetype"), url("fonts/wayfinder-icons.svg#wayfinder-icons") format("svg")
+      }
+      @font-face {
+        font-family: 'Brandon_reg';
+        src: url("fonts/Brandon_reg.eot");
+        src: url("fonts/Brandon_reg.eot") format('embedded-opentype'), url("fonts/Brandon_reg.woff2") format('woff2'), url("fonts/Brandon_reg.woff") format('woff'), url("fonts/Brandon_reg.ttf") format('truetype'), url("fonts/Brandon_reg.svg#Brandon_reg") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_bld';
+        src: url("fonts/Brandon_bld.eot");
+        src: url("fonts/Brandon_bld.eot") format('embedded-opentype'), url("fonts/Brandon_bld.woff2") format('woff2'), url("fonts/Brandon_bld.woff") format('woff'), url("fonts/Brandon_bld.ttf") format('truetype'), url("fonts/Brandon_bld.svg#Brandon_bld") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_med';
+        src: url("fonts/Brandon_med.eot");
+        src: url("fonts/Brandon_med.eot") format('embedded-opentype'), url("fonts/Brandon_med.woff2") format('woff2'), url("fonts/Brandon_med.woff") format('woff'), url("fonts/Brandon_med.ttf") format('truetype'), url("fonts/Brandon_med.svg#Brandon_med") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_light';
+        src: url("fonts/Brandon_light.eot");
+        src: url("fonts/Brandon_light.eot") format('embedded-opentype'), url("fonts/Brandon_light.woff2") format('woff2'), url("fonts/Brandon_light.woff") format('woff'), url("fonts/Brandon_light.ttf") format('truetype'), url("fonts/Brandon_light.#Brandon_light") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_thin';
+        src: url("fonts/Brandon_thin.eot");
+        src: url("fonts/Brandon_thin.eot") format('embedded-opentype'), url("fonts/Brandon_thin.woff2") format('woff2'), url("fonts/Brandon_thin.woff") format('woff'), url("fonts/Brandon_thin.ttf") format('truetype'), url("fonts/Brandon_thin.#Brandon_thin") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_reg_it';
+        src: url("fonts/Brandon_reg_it.eot");
+        src: url("fonts/Brandon_reg_it.eot") format('embedded-opentype'), url("fonts/Brandon_reg_it.woff2") format('woff2'), url("fonts/Brandon_reg_it.woff") format('woff'), url("fonts/Brandon_reg_it.ttf") format('truetype'), url("fonts/Brandon_reg_it.svg#Brandon_reg_it") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_bld_it';
+        src: url("fonts/Brandon_bld_it.eot");
+        src: url("fonts/Brandon_bld_it.eot") format('embedded-opentype'), url("fonts/Brandon_bld_it.woff2") format('woff2'), url("fonts/Brandon_bld_it.woff") format('woff'), url("fonts/Brandon_bld_it.ttf") format('truetype'), url("fonts/Brandon_bld_it.svg#Brandon_bld_it") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_med_it';
+        src: url("fonts/Brandon_med_it.eot");
+        src: url("fonts/Brandon_med_it.eot") format('embedded-opentype'), url("fonts/Brandon_med_it.woff2") format('woff2'), url("fonts/Brandon_med_it.woff") format('woff'), url("fonts/Brandon_med_it.ttf") format('truetype'), url("fonts/Brandon_med_it.svg#Brandon_med_it") format('svg')
+      }
+      @font-face {
+        font-family: 'Brandon_thin_it';
+        src: url("fonts/Brandon_thin_it.eot");
+        src: url("fonts/Brandon_thin_it.eot") format('embedded-opentype'), url("fonts/Brandon_thin_it.woff2") format('woff2'), url("fonts/Brandon_thin_it.woff") format('woff'), url("fonts/Brandon_thin_it.ttf") format('truetype'), url("fonts/Brandon_thin_it.#Brandon_thin_it") format('svg')
+      }
+      @font-face {
+        font-family: 'Staat-Bold';
+        src: url("fonts/Staat/Staat-Bold.eot");
+        src: url("fonts/Staat/Staat-Bold.eot") format('embedded-opentype'), url("fonts/Staat/Staat-Bold.woff2") format('woff2'), url("fonts/Staat/Staat-Bold.woff") format('woff'), url("fonts/Staat/Staat-Bold.ttf") format('truetype')
+      }
   body
     h1!= message
     #app!= prerender
-    script(id='props', type='text/json')!= props        
+    script(id='props', type='text/json')!= props
     script(type='text/javascript', src='app.js')
