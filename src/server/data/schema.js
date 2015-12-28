@@ -6,7 +6,8 @@ import {
   GraphQLString,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLBoolean
+  GraphQLBoolean,
+  GraphQLEnumType
 } from 'graphql';
 
 import Note from './note'
@@ -85,14 +86,29 @@ const NoteQuery = new GraphQLObjectType({
         },
         tags: {
           type: new GraphQLList(GraphQLString)
+        },
+        sort_field: {
+          type: GraphQLString
+        },
+        sort_direction: {
+          type: new GraphQLEnumType({
+            name: 'SortDirection',
+            values: {
+              'ASC': {value: 1},
+              'DES': {value: -1}
+            }
+          })
         }
       },
-      resolve(parent, {ids, tags}, {fieldASTs}) {
+      resolve(parent, {ids, tags,sort_field='_id',sort_direction=1}, {fieldASTs}) {
         var projections = getProjection(fieldASTs[0]);
 
-        if(ids) return Note.find({'_id':{$in:ids}}, projections)
-        else if(tags) return Note.find({'tags':{$in:tags}}, projections)
-        else return Note.find({}, projections)
+        let sortObj = {};
+        sortObj[sort_field] = sort_direction;
+
+        if(ids) return Note.find({'_id':{$in:ids}}, projections).sort(sortObj)
+        else if(tags) return Note.find({'tags':{$in:tags}}, projections).sort(sortObj)
+        else return Note.find({}, projections).sort(sortObj)
       }
     }
   }
