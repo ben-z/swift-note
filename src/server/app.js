@@ -6,6 +6,8 @@ import mongoose from 'mongoose'
 import Note from './data/note'
 import graphqlHTTP from 'express-graphql'
 import {Schema} from './data/schema.js'
+import browserify from 'browserify'
+import babelify from 'babelify'
 
 let app = express()
 app.use(cookieParser())
@@ -40,6 +42,10 @@ app.use('/graphql',(req,res,next)=>{
   }else{
     res.redirect('/login')
   }
+})
+
+app.get('/app.js',(req,res)=>{
+  browserify().add(__dirname+'/../client/app.js').transform(babelify).bundle().pipe(res);
 })
 
 app.use('/graphql',graphqlHTTP({
