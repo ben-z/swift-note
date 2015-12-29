@@ -6,13 +6,16 @@ function px_to_num(px){
 function num_to_px(num){
   return num+'px';
 }
-const ITEM_HEIGHT = '34px'
+const ITEM_HEIGHT = '34px';
+const PRIMARY_COLOR = '#2f83de';
 const PANEL_BACKGROUND = '#448fe1';
 const MODAL_WIDTH = '650px';
+const DARKENED_WHITE = LightenDarken('#ffffff',-10);
+const DARKENED_DARK_WHITE = LightenDarken('#ffffff',-30);
 
 var theme = {
   body: {
-    backgroundColor: '#2f83de',
+    backgroundColor: PRIMARY_COLOR,
     fontFamily: `'Brandon_reg', serif`
   },
   wrapper: {
@@ -27,12 +30,12 @@ var theme = {
     textAlign: 'center',
     display: 'block',
     padding: '10px',
-    marginTop: '6px',
-    marginBottom: '6px',
+    marginTop: '8px',
+    marginBottom: '8px',
     borderRadius: '3px',
-    boxShadow: '2px 2px 0px 1px rgba(225,225,225,0.5)',
+    boxShadow: '2px 2px 0px 1px rgba(255,255,255,0.5)',
     hover: {
-      boxShadow: '2px 2px 0px 1px rgba(225,225,225,0.7)',
+      boxShadow: '2px 2px 0px 1px rgba(255,255,255,0.7)',
       backgroundColor: LightenDarken(PANEL_BACKGROUND, 3),
       cursor: 'pointer'
     },
@@ -79,11 +82,12 @@ var theme = {
   	width:'auto',
   	height: 'auto',
     inner: {
-    	background: '#fff',
-    	borderRadius: '2px',
-    	borderColor: 'black',
-    	borderStyle: 'solid',
+    	background: LightenDarken(PANEL_BACKGROUND,10),
+    	borderRadius: '5px',
+      borderColor: 'white',
+    	borderStyle: 'outset',
     	maxWidth: '100%',
+      padding:'20px',
     	position: 'absolute',
     	top:'60px',
     	left:'50%',
@@ -91,16 +95,24 @@ var theme = {
     	marginLeft: num_to_px(-(px_to_num(MODAL_WIDTH)/2)),
     	width: MODAL_WIDTH,
     	overflowX: 'hidden',
+      color: 'white'
     },
     close: {
       position:'fixed',
       right: 0,
-      top: 0
+      top: 0,
+      color: '#333'
     },
     blur: {
       width: '100%',
       height: '100%',
-      backgroundColor: 'black',
+      background: `repeating-linear-gradient(
+                    -55deg,
+                    ${DARKENED_WHITE},
+                    ${DARKENED_WHITE} 10px,
+                    ${DARKENED_DARK_WHITE} 10px,
+                    ${DARKENED_DARK_WHITE} 20px
+                  )`,
       position: 'fixed',
       display: 'block',
       bottom: 0,

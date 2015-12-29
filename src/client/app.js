@@ -87,6 +87,7 @@ class App extends React.Component {
     request.get(url)
       .query(q)
       .end((err,res)=>{
+        if(err) throw err;
         callback(res.body.data)
       })
   }
@@ -134,6 +135,7 @@ class App extends React.Component {
     request.get(url)
       .query(q)
       .end((err,res)=>{
+        if(err) throw err;
         callback(res.body.data.note)
       })
   }
@@ -270,7 +272,7 @@ class Modal extends React.Component{
     }
     return (
       <div style={m(Theme.modal)}>
-        <div style={m(Theme.modal.blur)} />
+        <div style={m(Theme.modal.blur)} onClick={this.props._closeHandler}/>
         {modal}
         <div style={m(Theme.modal.close)} onClick={this.props._closeHandler}><Icon type="times" twox={true}/></div>
       </div>
