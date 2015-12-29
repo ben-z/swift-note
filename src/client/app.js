@@ -110,18 +110,32 @@ class App extends React.Component {
 }
 
 class NoteItem extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      hover: false
+    }
+    this._mouseOver = this._mouseOver.bind(this)
+    this._mouseOut = this._mouseOut.bind(this)
+  }
+  _mouseOver(){
+    this.setState({hover:true})
+  }
+  _mouseOut(){
+    this.setState({hover:false})
+  }
   render(){
     const d = moment(new Date(this.props.timestamp).toISOString());
     const d_fromnow = d.fromNow();
     const d_exact = d.format('LLLL');
 
     return (
-      <Panel data-id={this.props.id}>
-        <span style={m(Theme.panel.title)}>{this.props.title}</span>
-        <span style={m(Theme.panel.date)}>{d_fromnow}</span>
+      <Panel data-id={this.props.id} onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} hover={this.state.hover}>
+        <span style={m(Theme.panel.title, this.state.hover && Theme.panel.hover.title)}>{this.props.title}</span>
+        <span style={m(Theme.panel.date)} title={d_exact}>{d_fromnow}</span>
         <div style={m(Theme.panel.icons)}>
-          <Icon style={m(Theme.panel.icons.icon)} type="pencil" />
-          <Icon style={m(Theme.panel.icons.icon)} type="times" />
+          <Icon type="pencil" />
+          <Icon type="times" />
         </div>
       </Panel>
     )
@@ -140,15 +154,33 @@ NoteItem.defaultProps = {
 class Panel extends React.Component{
   render(){
     return(
-      <div style={m(Theme.panel)} {...this.props}>{this.props.children}</div>
+      <div style={m(Theme.panel,this.props.hover && Theme.panel.hover)} {...this.props}>{this.props.children}</div>
     )
   }
 }
 
+Panel.propTypes = {
+  hover: React.PropTypes.bool
+}
+
 class Icon extends React.Component{
+  constructor(props){
+    super(props)
+    this.state = {
+      hover: false
+    }
+    this._mouseOver = this._mouseOver.bind(this)
+    this._mouseOut = this._mouseOut.bind(this)
+  }
+  _mouseOver(){
+    this.setState({hover:true})
+  }
+  _mouseOut(){
+    this.setState({hover:false})
+  }
   render(){
     return(
-      <i className={`fa fa-${this.props.type} ${this.props.extra}`} {...this.props} />
+      <i className={`fa fa-${this.props.type} ${this.props.extra}`} {...this.props} onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} style={m(Theme.panel.icons.icon,this.state.hover && Theme.panel.icons.icon.hover)}/>
     )
   }
 }

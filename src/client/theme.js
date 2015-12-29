@@ -1,6 +1,10 @@
-const ITEM_HEIGHT = '34px'
+import LightenDarken from './util/lighten-darken'
 
-export default {
+const ITEM_HEIGHT = '34px'
+const PANEL_BACKGROUND = '#448fe1';
+
+
+var theme = {
   body: {
     backgroundColor: '#2f83de',
     fontFamily: `'Brandon_reg', serif`
@@ -12,7 +16,7 @@ export default {
     padding: '20px'
   },
   panel: {
-    backgroundColor: '#448fe1',
+    backgroundColor: PANEL_BACKGROUND,
     color: '#fff',
     textAlign: 'center',
     display: 'block',
@@ -21,6 +25,11 @@ export default {
     marginBottom: '6px',
     borderRadius: '3px',
     boxShadow: '2px 2px 0px 1px rgba(225,225,225,0.5)',
+    hover: {
+      boxShadow: '2px 2px 0px 1px rgba(225,225,225,0.7)',
+      backgroundColor: LightenDarken(PANEL_BACKGROUND, 3),
+      cursor: 'pointer'
+    },
     title: {
       verticalAlign: 'top',
       fontSize: '1.5em',
@@ -47,9 +56,14 @@ export default {
       marginRight: '2%',
       lineHeight: ITEM_HEIGHT,
       icon: {
-        marginLeft: 2,
-        marginRight:2
+        marginLeft: 3,
+        marginRight:3,
+        hover: {
+          fontSize: '1.05em'
+        }
       }
     }
   }
 }
+
+export default theme
