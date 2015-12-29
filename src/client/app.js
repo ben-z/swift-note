@@ -66,9 +66,11 @@ class App extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      notes: props.notes
+      notes: props.notes,
+      modal: false
     }
     this._updateList = this._updateList.bind(this);
+    this._openModal = this._openModal.bind(this);
   }
   static fetchList(url='http://localhost:8000/graphql',callback){
     const sort_field = 'timestamp';
@@ -93,17 +95,53 @@ class App extends React.Component {
       })
     })
   }
-  _renderList(arr){
+  _renderList(arr,_openModal){
     return arr.map((item)=>{
-      return <NoteItem key={item.id} {...item} />
+      return <NoteItem key={item.id} {...item} _openModal={_openModal}/>
     })
+  }
+  _openModal(id,forEditing,e){
+    e.stopPropagation();
+    // console.log('id',id);
+    // console.log('forEditing',forEditing);
+    // console.log('event',e);
+    this.setState({
+      modal: {
+        id: id,
+        forEditing: forEditing
+      }
+    })
+    this._fetchNote(void 0,id,(note)=>{
+      note.forEditing = forEditing;
+      this.setState({
+        modal: note
+      })
+    })
+  }
+  _fetchNote(url='http://localhost:8000/graphql',id,callback){
+    const q = {query:`{
+      note(id:"${id}"){
+        id
+        timestamp
+        title
+        description
+        tags
+        file_path
+      }
+    }`};
+    request.get(url)
+      .query(q)
+      .end((err,res)=>{
+        callback(res.body.data.note)
+      })
   }
   render(){
     return (
       <div style={m(Theme.body)}>
         <div style={m(Theme.wrapper)}>
-          {this._renderList(this.state.notes)}
+          {this._renderList(this.state.notes,this._openModal)}
         </div>
+        <Modal {...this.state.modal} />
       </div>
     )
   }
@@ -130,12 +168,12 @@ class NoteItem extends React.Component{
     const d_exact = d.format('LLLL');
 
     return (
-      <Panel data-id={this.props.id} onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} hover={this.state.hover}>
+      <Panel onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} hover={this.state.hover} onClick={this.props._openModal.bind(this,this.props.id,false)}>
         <span style={m(Theme.panel.title, this.state.hover && Theme.panel.hover.title)}>{this.props.title}</span>
         <span style={m(Theme.panel.date)} title={d_exact}>{d_fromnow}</span>
         <div style={m(Theme.panel.icons)}>
-          <Icon type="pencil" />
-          <Icon type="times" />
+          <Icon type="pencil" onClick={this.props._openModal.bind(this,this.props.id,true)}/>
+          <Icon type="times" /> //TODO: Remove Item
         </div>
       </Panel>
     )
@@ -188,6 +226,46 @@ class Icon extends React.Component{
 Icon.propTypes = {
   type: React.PropTypes.string.isRequired,
   extra: React.PropTypes.string
+}
+
+class Modal extends React.Component{
+  constructor(props){
+    super(props);
+  }
+  render(){
+    let modal,title,description,file_path,tags,timestamp;
+    if(typeof this.props.id==='undefined'){
+      return null;
+    }else if(typeof this.props.title === 'undefined'){
+      modal = 'Updating...'
+    }else{
+      if(!this.props.forEditing){
+        title = <h1>{this.props.title}</h1>
+        description = <p>{this.props.description}</p>
+        file_path = <a href={this.props.file_path}>Attachment</a>
+        tags = <p>{this.props.tags.join(', ')}</p>
+        timestamp = <p>Last Update: {moment(new Date(this.props.timestamp).toISOString()).fromNow()}</p>
+      }else{console.log('something');}
+      modal = <div>{title}{description}{file_path}{tags}{timestamp}</div>
+    }
+    return (
+      <div>{modal}</div>
+    )
+  }
+}
+
+Modal.propTypes = {
+  id: React.PropTypes.string,
+  title: React.PropTypes.string,
+  description: React.PropTypes.string,
+  file_path: React.PropTypes.string,
+  tags: React.PropTypes.arrayOf(React.PropTypes.string),
+  timestamp: React.PropTypes.string,
+  forEditing: React.PropTypes.bool
+}
+
+Modal.defaultProps = {
+  forEditing: false
 }
 
 if (typeof document !== 'undefined') {
