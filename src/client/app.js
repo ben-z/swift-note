@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import request from 'superagent'
 import moment from 'moment'
 import Theme from './theme'
+import WindowManager from './util/window-manager'
 
 function byString(o, s) {
     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
@@ -71,6 +72,7 @@ class App extends React.Component {
     }
     this._updateList = this._updateList.bind(this);
     this._openModal = this._openModal.bind(this);
+    this._closeHandler = this._closeHandler.bind(this);
   }
   static fetchList(url='http://localhost:8000/graphql',callback){
     const sort_field = 'timestamp';
@@ -135,13 +137,26 @@ class App extends React.Component {
         callback(res.body.data.note)
       })
   }
+  _closeHandler(){
+    this.setState({
+      modal: false
+    })
+  }
+  componentDidUpdate(){
+    // window.manager = WindowManager;
+    // if(this.state.modal){
+    //   WindowManager.disableScroll();
+    // }else{
+    //   WindowManager.enableScroll();
+    // }
+  }
   render(){
     return (
       <div style={m(Theme.body)}>
         <div style={m(Theme.wrapper)}>
           {this._renderList(this.state.notes,this._openModal)}
         </div>
-        <Modal {...this.state.modal} />
+        <Modal {...this.state.modal} _closeHandler={this._closeHandler} />
       </div>
     )
   }
@@ -173,7 +188,7 @@ class NoteItem extends React.Component{
         <span style={m(Theme.panel.date)} title={d_exact}>{d_fromnow}</span>
         <div style={m(Theme.panel.icons)}>
           <Icon type="pencil" onClick={this.props._openModal.bind(this,this.props.id,true)}/>
-          <Icon type="times" /> //TODO: Remove Item
+          <Icon type="times" />
         </div>
       </Panel>
     )
@@ -218,14 +233,19 @@ class Icon extends React.Component{
   }
   render(){
     return(
-      <i className={`fa fa-${this.props.type} ${this.props.extra}`} {...this.props} onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} style={m(Theme.panel.icons.icon,this.state.hover && Theme.panel.icons.icon.hover)}/>
+      <i className={`fa fa-${this.props.type} ${this.props.twox && 'fa-2x'} ${this.props.extra}`} {...this.props} onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} style={m(Theme.panel.icons.icon, this.state.hover && (this.props.twox? Theme.panel.icons.icon.hover.twox:Theme.panel.icons.icon.hover))}/>
     )
   }
 }
 
 Icon.propTypes = {
   type: React.PropTypes.string.isRequired,
+  twox: React.PropTypes.bool,
   extra: React.PropTypes.string
+}
+
+Icon.defaultProps = {
+  extra: ''
 }
 
 class Modal extends React.Component{
@@ -246,10 +266,14 @@ class Modal extends React.Component{
         tags = <p>{this.props.tags.join(', ')}</p>
         timestamp = <p>Last Update: {moment(new Date(this.props.timestamp).toISOString()).fromNow()}</p>
       }else{console.log('something');}
-      modal = <div>{title}{description}{file_path}{tags}{timestamp}</div>
+      modal = <div style={m(Theme.modal.inner)}>{title}{description}{file_path}{tags}{timestamp}</div>
     }
     return (
-      <div>{modal}</div>
+      <div style={m(Theme.modal)}>
+        <div style={m(Theme.modal.blur)} />
+        {modal}
+        <div style={m(Theme.modal.close)} onClick={this.props._closeHandler}><Icon type="times" twox={true}/></div>
+      </div>
     )
   }
 }
@@ -261,7 +285,8 @@ Modal.propTypes = {
   file_path: React.PropTypes.string,
   tags: React.PropTypes.arrayOf(React.PropTypes.string),
   timestamp: React.PropTypes.string,
-  forEditing: React.PropTypes.bool
+  forEditing: React.PropTypes.bool,
+  _closeHandler: React.PropTypes.func
 }
 
 Modal.defaultProps = {

@@ -1,8 +1,14 @@
 import LightenDarken from './util/lighten-darken'
 
+function px_to_num(px){
+  return Number(px.replace('px',''))
+}
+function num_to_px(num){
+  return num+'px';
+}
 const ITEM_HEIGHT = '34px'
 const PANEL_BACKGROUND = '#448fe1';
-
+const MODAL_WIDTH = '650px';
 
 var theme = {
   body: {
@@ -59,9 +65,47 @@ var theme = {
         marginLeft: 3,
         marginRight:3,
         hover: {
-          fontSize: '1.05em'
+          fontSize: '1.05em',
+          cursor: 'pointer',
+          twox: {
+            fontSize: '2.1em',
+            cursor: 'pointer'
+          }
         }
       }
+    }
+  },
+  modal: {
+  	width:'auto',
+  	height: 'auto',
+    inner: {
+    	background: '#fff',
+    	borderRadius: '2px',
+    	borderColor: 'black',
+    	borderStyle: 'solid',
+    	maxWidth: '100%',
+    	position: 'absolute',
+    	top:'60px',
+    	left:'50%',
+    	zIndex: 20,
+    	marginLeft: num_to_px(-(px_to_num(MODAL_WIDTH)/2)),
+    	width: MODAL_WIDTH,
+    	overflowX: 'hidden',
+    },
+    close: {
+      position:'fixed',
+      right: 0,
+      top: 0
+    },
+    blur: {
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'black',
+      position: 'fixed',
+      display: 'block',
+      bottom: 0,
+      left: 0,
+      opacity: 0.5
     }
   }
 }
