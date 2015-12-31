@@ -28,7 +28,7 @@ if(process.env.NODE_ENV !== 'test'){
 }
 
 app.get('/', (req, res)=>{
-  ClientApp.fetchList(void 0,(props)=>{
+  ClientApp.fetchList((props)=>{
     let prerender = ReactDOMServer.renderToString(<ClientApp {...props} />);
     res.render('index', {title: 'SwiftNote', message: 'Work In Progress', prerender: prerender, props: JSON.stringify(props)});
   })

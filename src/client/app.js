@@ -5,6 +5,8 @@ import moment from 'moment'
 import Theme from './theme'
 import WindowManager from './util/window-manager'
 
+const API_URL = 'http://localhost:8000/graphql';
+
 function byString(o, s) {
     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
     s = s.replace(/^\./, '');           // strip a leading dot
@@ -73,8 +75,9 @@ class App extends React.Component {
     this._updateList = this._updateList.bind(this);
     this._openModal = this._openModal.bind(this);
     this._closeHandler = this._closeHandler.bind(this);
+    this._removeNote = this._removeNote.bind(this);
   }
-  static fetchList(url='http://localhost:8000/graphql',callback){
+  static fetchList(callback){
     const sort_field = 'timestamp';
     const sort_direction = 'DES';
     const q = {query:`{
@@ -84,7 +87,7 @@ class App extends React.Component {
         title
       }
     }`};
-    request.get(url)
+    request.get(API_URL)
       .query(q)
       .end((err,res)=>{
         if(err) throw err;
@@ -92,7 +95,7 @@ class App extends React.Component {
       })
   }
   _updateList(){
-    this.constructor.fetchList(void 0,(data)=>{
+    this.constructor.fetchList((data)=>{
       this.setState({
         notes: data.notes
       })
@@ -100,7 +103,7 @@ class App extends React.Component {
   }
   _renderList(arr,_openModal){
     return arr.map((item)=>{
-      return <NoteItem key={item.id} {...item} _openModal={_openModal}/>
+      return <NoteItem key={item.id} {...item} _openModal={_openModal} _removeNote={this._removeNote}/>
     })
   }
   _openModal(id,forEditing,e){
@@ -114,14 +117,14 @@ class App extends React.Component {
         forEditing: forEditing
       }
     })
-    this._fetchNote(void 0,id,(note)=>{
+    this._fetchNote(id,(note)=>{
       note.forEditing = forEditing;
       this.setState({
         modal: note
       })
     })
   }
-  _fetchNote(url='http://localhost:8000/graphql',id,callback){
+  _fetchNote(id,callback){
     const q = {query:`{
       note(id:"${id}"){
         id
@@ -132,7 +135,7 @@ class App extends React.Component {
         file_path
       }
     }`};
-    request.get(url)
+    request.get(API_URL)
       .query(q)
       .end((err,res)=>{
         if(err) throw err;
@@ -143,6 +146,27 @@ class App extends React.Component {
     this.setState({
       modal: false
     })
+  }
+  _removeNote(id,e){
+    e.stopPropagation();
+    const q = {query: `mutation{
+      removeNote(id:"${id}"){
+        id
+      }
+    }`};
+    request.post(API_URL)
+      .query(q)
+      .end((err,res)=>{
+        if (err) throw (err);
+        else{
+          if(!res.body.data.removeNote.id) console.log('note does not exist');
+          let notes_removed = filterOne(this.state.notes,'id',id);
+          console.log(notes_removed);
+          this.setState({
+            notes: notes_removed
+          })
+        }
+      })
   }
   componentDidUpdate(){
     // window.manager = WindowManager;
@@ -190,7 +214,7 @@ class NoteItem extends React.Component{
         <span style={m(Theme.panel.date)} title={d_exact}>{d_fromnow}</span>
         <div style={m(Theme.panel.icons)}>
           <Icon type="pencil" onClick={this.props._openModal.bind(this,this.props.id,true)}/>
-          <Icon type="times" />
+          <Icon type="times" onClick={this.props._removeNote.bind(this, this.props.id)} />
         </div>
       </Panel>
     )
