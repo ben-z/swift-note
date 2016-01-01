@@ -7,7 +7,7 @@ import WindowManager from './util/window-manager'
 
 const API_URL = 'http://localhost:8000/graphql';
 
-function byString(o, s) {
+function getPropertyByString(o, s) {
     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
     s = s.replace(/^\./, '');           // strip a leading dot
     var a = s.split('.');
@@ -22,11 +22,11 @@ function byString(o, s) {
     return o;
 }
 // removes the first object in array that satisfies:
-//   byString(obj,property)===compareObj
+//   getPropertyByString(obj,property)===compareObj
 function filterOne(array,property,compareObj,i=0){
   if (array.length < i+1) {
     return array;
-  }else if (byString(array[i],property)===compareObj) {
+  }else if (getPropertyByString(array[i],property)===compareObj) {
     array.splice(i,1);
     return array;
   }else{
@@ -42,7 +42,7 @@ function filterOne(array,property,compareObj,i=0){
 // => [{p:{c:1}},{p:{c:3}}]
 
 // filter function for Objects, similar to Array.prototype.filter
-Object.filter = function(obj, predicate) {
+let objFilter = Object.filter = function(obj, predicate) {
     let result = {}, key;
 
     for (key in obj) {
@@ -52,6 +52,18 @@ Object.filter = function(obj, predicate) {
     }
 
     return result;
+}
+
+let objIsEquiv = Object.isEquiv = function(o1,o2){
+  for (let key in o1) {
+    if(!o1.hasOwnProperty(key) || o1[key] === o2[key]) continue;
+    else return false;
+  }
+  for (let key in o2) {
+    if(!o2.hasOwnProperty(key) || o1[key] === o2[key]) continue;
+    else return false;
+  }
+  return true
 }
 
 // Merges js stylesheets
@@ -71,6 +83,8 @@ function m(){
   return Object.filter(res,val=>{return (typeof val !== 'object')})
 }
 
+export {getPropertyByString,filterOne,objFilter,objIsEquiv,m};
+
 class App extends React.Component {
   constructor(props){
     super(props)
@@ -80,7 +94,7 @@ class App extends React.Component {
     }
     this._updateList = this._updateList.bind(this);
     this._openModal = this._openModal.bind(this);
-    this._closeHandler = this._closeHandler.bind(this);
+    this._closeModal = this._closeModal.bind(this);
     this._removeNote = this._removeNote.bind(this);
   }
   static fetchList(callback){
@@ -124,6 +138,7 @@ class App extends React.Component {
       }
     })
     this._fetchNote(id,(note)=>{
+      if(!note) return alert('note not found, please refresh the window');
       note.forEditing = forEditing;
       this.setState({
         modal: note
@@ -148,7 +163,7 @@ class App extends React.Component {
         callback(res.body.data.note)
       })
   }
-  _closeHandler(){
+  _closeModal(){
     this.setState({
       modal: false
     })
@@ -192,7 +207,7 @@ class App extends React.Component {
         <div style={m(Theme.wrapper)}>
           {this._renderList(this.state.notes)}
         </div>
-        <Modal {...this.state.modal} _closeHandler={this._closeHandler} _openModal={this._openModal} _removeNote={this._removeNote} />
+        <Modal {...this.state.modal} _closeModal={this._closeModal} _openModal={this._openModal} _removeNote={this._removeNote} />
       </div>
     )
   }
@@ -309,9 +324,9 @@ class Modal extends React.Component{
     }
     return (
       <div style={m(Theme.modal)}>
-        <div style={m(Theme.modal.blur)} onClick={this.props._closeHandler}/>
+        <div style={m(Theme.modal.blur)} onClick={this.props._closeModal}/>
         {modal}
-        <div style={m(Theme.modal.close)} onClick={this.props._closeHandler}><Icon type="times" twox={true}/></div>
+        <div style={m(Theme.modal.close)} onClick={this.props._closeModal}><Icon type="times" twox={true}/></div>
       </div>
     )
   }
@@ -325,7 +340,7 @@ Modal.propTypes = {
   tags: React.PropTypes.arrayOf(React.PropTypes.string),
   timestamp: React.PropTypes.string,
   forEditing: React.PropTypes.bool,
-  _closeHandler: React.PropTypes.func
+  _closeModal: React.PropTypes.func
 }
 
 Modal.defaultProps = {
