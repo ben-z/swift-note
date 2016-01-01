@@ -12,6 +12,7 @@ import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import ClientApp from '../client/app'
 import objectAssign from 'object-assign'
+// Object.assign fallback
 Object.assign = Object.assign || objectAssign
 
 let app = express()

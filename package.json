@@ -23,7 +23,8 @@
     "jade": "~1.11.0",
     "express-graphql": "~0.4.5",
     "moment": "~2.10.6",
-    "superagent": "~1.6.1"
+    "superagent": "~1.6.1",
+    "object-assign": "~4.0.1"
   },
   "devDependencies": {
     "babel-core": "~6.3.17",
