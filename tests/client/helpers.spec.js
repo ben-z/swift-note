@@ -1,7 +1,7 @@
 'use strict';
 
 import {expect} from 'chai';
-import {getPropertyByString,filterOne,objFilter,objIsEquiv,m} from '../../src/client/app'
+import {getPropertyByString,filterOne,objFilter,objIsEquiv,m as mergeStylesheets} from '../../src/client/app'
 
 describe('helpers', ()=> {
   describe('getPropertyByString', ()=> {
@@ -50,9 +50,9 @@ describe('helpers', ()=> {
       let o1 = {a:1,b:2}
       let o2 = {b:2,a:1}
       let o3 = {a:1}
-      let o4 = {a:1,b:2,c:[1,2]}
+      let o4 = {a:1,b:2,c:[1,2]} // with arrays
       let o4_copy = {a:1,b:2,c:[1,2]}
-      let o5 = {a:1,b:2,c:{d:3,e:4,f:{g:5,h:6}}}
+      let o5 = {a:1,b:2,c:{d:3,e:4,f:{g:5,h:6}}} // nested
       let o5_copy = {a:1,b:2,c:{d:3,e:4,f:{g:5,h:6}}}
 
       expect(objIsEquiv(o1,o2)).to.be.true;
@@ -64,5 +64,27 @@ describe('helpers', ()=> {
       expect(objIsEquiv(o5,'string')).to.be.false;
     })
   })
-  // TODO: m()
+  describe('mergeStylesheets',()=>{
+    it('should return the union of two object\'s properties excluding nested Objects',()=>{
+      let o1 = {
+        color: '#fff',
+        textAlign: 'center',
+        something: {a:1}
+      }
+      let o2 = {
+        verticalAlign: 'top',
+        fontSize: '1.5em',
+        textAlign: 'left',
+        somethingelse: {b:2}
+      }
+      let res = {
+        color: '#fff',
+        verticalAlign: 'top',
+        fontSize: '1.5em',
+        textAlign: 'left'
+      }
+
+      expect(mergeStylesheets(o1,o2)).to.be.eql(res)
+    })
+  })
 });
