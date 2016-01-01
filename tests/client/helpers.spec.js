@@ -50,9 +50,19 @@ describe('helpers', ()=> {
       let o1 = {a:1,b:2}
       let o2 = {b:2,a:1}
       let o3 = {a:1}
+      let o4 = {a:1,b:2,c:[1,2]}
+      let o4_copy = {a:1,b:2,c:[1,2]}
+      let o5 = {a:1,b:2,c:{d:3,e:4,f:{g:5,h:6}}}
+      let o5_copy = {a:1,b:2,c:{d:3,e:4,f:{g:5,h:6}}}
 
-      expect(objIsEquiv(o1,o2)).to.be.eql(true);
-      // expect(objIsEquiv(o1,o3)).to.be.false;
+      expect(objIsEquiv(o1,o2)).to.be.true;
+      expect(objIsEquiv(o1,o3)).to.be.false;
+      expect(objIsEquiv(o4,o4_copy)).to.be.true;
+      expect(objIsEquiv(o5,o5_copy)).to.be.true;
+      expect(objIsEquiv('string','string')).to.be.true;
+      expect(objIsEquiv(o5,o4)).to.be.false;
+      expect(objIsEquiv(o5,'string')).to.be.false;
     })
   })
+  // TODO: m()
 });

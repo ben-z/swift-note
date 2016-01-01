@@ -55,15 +55,25 @@ let objFilter = Object.filter = function(obj, predicate) {
 }
 
 let objIsEquiv = Object.isEquiv = function(o1,o2){
-  for (let key in o1) {
-    if(!o1.hasOwnProperty(key) || o1[key] === o2[key]) continue;
-    else return false;
+  if(typeof o1 !== 'object' || typeof o2 !== 'object'){
+    // Case o1 or o2 is not an object
+    return ((typeof o1 === typeof o2) && o1===o2)
+  }else if(Object.prototype.toString.call(o1) === '[object Array]'||
+            Object.prototype.toString.call(o2) === '[object Array]'){
+    // Case o1 or o2 is an array
+    return (JSON.stringify(o1)===JSON.stringify(o2))
+  }else{
+    // Case o1 and o2 are objcts
+    for (let key in o1) {
+      if(!o1.hasOwnProperty(key) || o1[key] === o2[key] || objIsEquiv(o1[key],o2[key])) continue;
+      else return false;
+    }
+    for (let key in o2) {
+      if(!o2.hasOwnProperty(key) || o1[key] === o2[key] || objIsEquiv(o1[key],o2[key])) continue;
+      else return false;
+    }
+    return true
   }
-  for (let key in o2) {
-    if(!o2.hasOwnProperty(key) || o1[key] === o2[key]) continue;
-    else return false;
-  }
-  return true
 }
 
 // Merges js stylesheets
