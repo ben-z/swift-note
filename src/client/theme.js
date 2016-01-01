@@ -118,6 +118,16 @@ var theme = {
       bottom: 0,
       left: 0,
       opacity: 0.5
+    },
+    title: {
+      display: 'inline'
+    },
+    subtitleActions: {
+      display:'inline',
+      marginLeft:'10px',
+      icon:{
+        verticalAlign: 'text-top'
+      }
     }
   }
 }

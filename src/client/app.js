@@ -58,11 +58,17 @@ Object.filter = function(obj, predicate) {
 function m(){
   let res = {}
   for (let i = 0; i < arguments.length; ++i){
-    if (arguments[i]) {
-      Object.assign(res,Object.filter(arguments[i],val=>{return (typeof val !== 'object')}))
+    let a = arguments[i]
+    if (a) {
+      // Check if arguments[i] is an array
+      if(Object.prototype.toString.call(a) === '[object Array]'){
+        a = m.apply(this,a)
+      }
+      Object.assign(res,a)
     }
   }
-  return res;
+  // Filter out children styles
+  return Object.filter(res,val=>{return (typeof val !== 'object')})
 }
 
 class App extends React.Component {
@@ -101,9 +107,9 @@ class App extends React.Component {
       })
     })
   }
-  _renderList(arr,_openModal){
+  _renderList(arr){
     return arr.map((item)=>{
-      return <NoteItem key={item.id} {...item} _openModal={_openModal} _removeNote={this._removeNote}/>
+      return <NoteItem key={item.id} {...item} _openModal={this._openModal} _removeNote={this._removeNote}/>
     })
   }
   _openModal(id,forEditing,e){
@@ -125,7 +131,7 @@ class App extends React.Component {
     })
   }
   _fetchNote(id,callback){
-    const q = {query:`{
+    const q = {query:`query{
       note(id:"${id}"){
         id
         timestamp
@@ -149,6 +155,9 @@ class App extends React.Component {
   }
   _removeNote(id,e){
     e.stopPropagation();
+    if (!confirm('Remove this note?')) {
+      return ;
+    }
     const q = {query: `mutation{
       removeNote(id:"${id}"){
         id
@@ -163,7 +172,8 @@ class App extends React.Component {
           let notes_removed = filterOne(this.state.notes,'id',id);
           console.log(notes_removed);
           this.setState({
-            notes: notes_removed
+            notes: notes_removed,
+            modal:false
           })
         }
       })
@@ -180,9 +190,9 @@ class App extends React.Component {
     return (
       <div style={m(Theme.body)}>
         <div style={m(Theme.wrapper)}>
-          {this._renderList(this.state.notes,this._openModal)}
+          {this._renderList(this.state.notes)}
         </div>
-        <Modal {...this.state.modal} _closeHandler={this._closeHandler} />
+        <Modal {...this.state.modal} _closeHandler={this._closeHandler} _openModal={this._openModal} _removeNote={this._removeNote} />
       </div>
     )
   }
@@ -259,7 +269,7 @@ class Icon extends React.Component{
   }
   render(){
     return(
-      <i className={`fa fa-${this.props.type} ${this.props.twox && 'fa-2x'} ${this.props.extra}`} {...this.props} onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} style={m(Theme.panel.icons.icon, this.state.hover && (this.props.twox? Theme.panel.icons.icon.hover.twox:Theme.panel.icons.icon.hover))}/>
+      <i className={`fa fa-${this.props.type} ${this.props.twox && 'fa-2x'} ${this.props.extraClassName}`} {...this.props} onMouseOver={this._mouseOver} onMouseOut={this._mouseOut} style={m(Theme.panel.icons.icon, this.state.hover && (this.props.twox? Theme.panel.icons.icon.hover.twox:Theme.panel.icons.icon.hover), this.props.extraStyles)}/>
     )
   }
 }
@@ -267,11 +277,13 @@ class Icon extends React.Component{
 Icon.propTypes = {
   type: React.PropTypes.string.isRequired,
   twox: React.PropTypes.bool,
-  extra: React.PropTypes.string
+  extraClassName: React.PropTypes.string,
+  extraStyles: React.PropTypes.arrayOf(React.PropTypes.object)
 }
 
 Icon.defaultProps = {
-  extra: ''
+  extraClassName: '',
+  extraStyles: []
 }
 
 class Modal extends React.Component{
@@ -286,7 +298,8 @@ class Modal extends React.Component{
       modal = 'Updating...'
     }else{
       if(!this.props.forEditing){
-        title = <h1>{this.props.title}</h1>
+        title = <div><h1 style={Theme.modal.title}>{this.props.title}</h1><div style={m(Theme.modal.subtitleActions)}><Icon extraStyles={[Theme.modal.subtitleActions.icon]} type="pencil" onClick={this.props._openModal.bind(this,this.props.id,true)}/>
+        <Icon extraStyles={[Theme.modal.subtitleActions.icon]} type="times" onClick={this.props._removeNote.bind(this, this.props.id)} /></div></div>
         description = <p>{this.props.description}</p>
         file_path = <a href={this.props.file_path}>Attachment</a>
         tags = <p>{this.props.tags.join(', ')}</p>
