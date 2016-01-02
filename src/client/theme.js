@@ -14,16 +14,40 @@ const DARKENED_WHITE = LightenDarken('#ffffff',-10);
 const DARKENED_DARK_WHITE = LightenDarken('#ffffff',-30);
 
 var theme = {
+
+   #####   ####  #####  #   #
+   #    # #    # #    #  # #
+   #####  #    # #    #   #
+   #    # #    # #    #   #
+   #    # #    # #    #   #
+   #####   ####  #####    #
+
   body: {
     backgroundColor: PRIMARY_COLOR,
     fontFamily: `'Brandon_reg', serif`
   },
+
+   #    # #####    ##   #####  #####  ###### #####
+   #    # #    #  #  #  #    # #    # #      #    #
+   #    # #    # #    # #    # #    # #####  #    #
+   # ## # #####  ###### #####  #####  #      #####
+   ##  ## #   #  #    # #      #      #      #   #
+   #    # #    # #    # #      #      ###### #    #
+
   wrapper: {
     width: '80%',
     marginLeft: 'auto',
     marginRight: 'auto',
     padding: '20px'
   },
+
+   #####    ##   #    # ###### #
+   #    #  #  #  ##   # #      #
+   #    # #    # # #  # #####  #
+   #####  ###### #  # # #      #
+   #      #    # #   ## #      #
+   #      #    # #    # ###### ######
+
   panel: {
     backgroundColor: PANEL_BACKGROUND,
     color: '#fff',
@@ -78,6 +102,14 @@ var theme = {
       }
     }
   },
+
+   #    #  ####  #####    ##   #
+   ##  ## #    # #    #  #  #  #
+   # ## # #    # #    # #    # #
+   #    # #    # #    # ###### #
+   #    # #    # #    # #    # #
+   #    #  ####  #####  #    # ######
+
   modal: {
   	width:'auto',
   	height: 'auto',

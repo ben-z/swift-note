@@ -7,6 +7,14 @@ import WindowManager from './util/window-manager'
 
 const API_URL = 'http://localhost:8000/graphql';
 
+ #     #
+ #     # ###### #      #####  ###### #####   ####
+ #     # #      #      #    # #      #    # #
+ ####### #####  #      #    # #####  #    #  ####
+ #     # #      #      #####  #      #####       #
+ #     # #      #      #      #      #   #  #    #
+ #     # ###### ###### #      ###### #    #  ####
+
 function getPropertyByString(o, s) {
     s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
     s = s.replace(/^\./, '');           // strip a leading dot
@@ -94,6 +102,14 @@ function m(){
 }
 
 export {getPropertyByString,filterOne,objFilter,objIsEquiv,m};
+
+    #
+   # #   #####  #####
+  #   #  #    # #    #
+ #     # #    # #    #
+ ####### #####  #####
+ #     # #      #
+ #     # #      #
 
 class App extends React.Component {
   constructor(props){
@@ -223,6 +239,14 @@ class App extends React.Component {
   }
 }
 
+ #     #                     ###
+ ##    #  ####  ##### ######  #  ##### ###### #    #
+ # #   # #    #   #   #       #    #   #      ##  ##
+ #  #  # #    #   #   #####   #    #   #####  # ## #
+ #   # # #    #   #   #       #    #   #      #    #
+ #    ## #    #   #   #       #    #   #      #    #
+ #     #  ####    #   ###### ###   #   ###### #    #
+
 class NoteItem extends React.Component{
   constructor(props){
     super(props)
@@ -265,6 +289,14 @@ NoteItem.defaultProps = {
   title:''
 }
 
+  ######
+  #     #   ##   #    # ###### #
+  #     #  #  #  ##   # #      #
+  ######  #    # # #  # #####  #
+  #       ###### #  # # #      #
+  #       #    # #   ## #      #
+  #       #    # #    # ###### ######
+
 class Panel extends React.Component{
   render(){
     return(
@@ -276,6 +308,14 @@ class Panel extends React.Component{
 Panel.propTypes = {
   hover: React.PropTypes.bool
 }
+
+ ###
+  #   ####   ####  #    #
+  #  #    # #    # ##   #
+  #  #      #    # # #  #
+  #  #      #    # #  # #
+  #  #    # #    # #   ##
+ ###  ####   ####  #    #
 
 class Icon extends React.Component{
   constructor(props){
@@ -310,6 +350,14 @@ Icon.defaultProps = {
   extraClassName: '',
   extraStyles: []
 }
+
+ #     #
+ ##   ##  ####  #####    ##   #
+ # # # # #    # #    #  #  #  #
+ #  #  # #    # #    # #    # #
+ #     # #    # #    # ###### #
+ #     # #    # #    # #    # #
+ #     #  ####  #####  #    # ######
 
 class Modal extends React.Component{
   constructor(props){
