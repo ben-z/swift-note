@@ -15,9 +15,11 @@ const NoteSchema = new mongoose.Schema({
   tags: {
     type: [String]
   },
-  file_path: {
-    type: String,
-    default:''
+  files: {
+    type: [{
+      name: String,
+      uid: String
+    }]
   }
 },{collection: 'swiftnote'});
 

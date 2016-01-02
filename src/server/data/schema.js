@@ -7,7 +7,8 @@ import {
   GraphQLList,
   GraphQLNonNull,
   GraphQLBoolean,
-  GraphQLEnumType
+  GraphQLEnumType,
+  GraphQLInputObjectType
 } from 'graphql';
 
 import Note from './note'
@@ -24,6 +25,30 @@ export function getProjection (fieldASTs) {
     return projections;
   }, {});
 }
+
+const FileOutputType = new GraphQLObjectType({
+  name: 'FileOut',
+  fields: {
+    name: {
+      type: GraphQLString
+    },
+    uid: {
+      type: GraphQLString
+    }
+  }
+})
+
+const FileInputType = new GraphQLInputObjectType({
+  name: 'FileIn',
+  fields: {
+    name: {
+      type: GraphQLString
+    },
+    uid: {
+      type: GraphQLString
+    }
+  }
+})
 
 const NoteType = new GraphQLObjectType({
   name: 'Note',
@@ -43,8 +68,8 @@ const NoteType = new GraphQLObjectType({
     tags: {
       type: new GraphQLList(GraphQLString)
     },
-    file_path: {
-      type: GraphQLString
+    files: {
+      type: new GraphQLList(FileOutputType)
     }
   })
 })
@@ -61,18 +86,14 @@ const NoteQuery = new GraphQLObjectType({
         },
         title: {
           type: GraphQLString
-        },
-        file_path: {
-          type: GraphQLString
         }
       },
-      resolve(parent, {id, title, file_path}, {fieldASTs}) {
+      resolve(parent, {id, title}, {fieldASTs}) {
         // Obtain only needed fields from mongoose
         var projections = getProjection(fieldASTs[0]);
 
         if(id) return Note.findById(id, projections)
         else if(title) return Note.findOne({title:title},projections)
-        else if(file_path) return Note.findOne({file_path:file_path},projections)
         else return Note.findOne({},projections)
 
       }
@@ -130,8 +151,8 @@ const NoteMutation = new GraphQLObjectType({
         tags: {
           type: new GraphQLList(GraphQLString)
         },
-        file_path: {
-          type: GraphQLString
+        files: {
+          type: new GraphQLList(FileInputType)
         }
       },
       resolve(parent, noteobj) {
@@ -157,17 +178,17 @@ const NoteMutation = new GraphQLObjectType({
         tags: {
           type: new GraphQLList(GraphQLString)
         },
-        file_path: {
-          type: GraphQLString
+        files: {
+          type: new GraphQLList(FileInputType)
         }
       },
-      resolve(parent,{id, title, description, tags, file_path},{fieldASTs}){
+      resolve(parent,{id, title, description, tags, files},{fieldASTs}){
          var projections = getProjection(fieldASTs[0]);
          let updateObj = {}
          if(typeof title !== 'undefined') updateObj.title = title;
          if(typeof description !== 'undefined') updateObj.description = description;
          if(typeof tags !== 'undefined') updateObj.tags = tags;
-         if(typeof file_path !== 'undefined') updateObj.file_path = file_path;
+         if(typeof files !== 'undefined') updateObj.files = files;
          if(0 !== Object.keys(updateObj).length) updateObj.timestamp = Date();
 
          return Note.findByIdAndUpdate(id,updateObj,

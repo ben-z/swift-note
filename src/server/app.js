@@ -2,6 +2,7 @@
 
 import express from 'express'
 import cookieParser from 'cookie-parser'
+import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
 import Note from './data/note'
 import graphqlHTTP from 'express-graphql'
@@ -16,6 +17,7 @@ import objectAssign from 'object-assign'
 Object.assign = Object.assign || objectAssign
 
 let app = express()
+app.use(bodyParser())
 app.use(cookieParser())
 
 app.set('views', __dirname + '/views')
@@ -51,6 +53,11 @@ app.get('/login', (req,res)=>{
 app.get('/logout', (req,res)=>{
   res.clearCookie('user');
   res.send('<a href="/graphql">back to graphql</a><br /><a href="/login">login</a>');
+})
+
+app.post('/upload',(req,res)=>{
+  console.log(req.body);
+  res.json('success')
 })
 
 app.get('/app.js',(req,res)=>{

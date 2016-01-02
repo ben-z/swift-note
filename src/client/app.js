@@ -105,7 +105,7 @@ function clone(obj) {
     if (null == obj || "object" != typeof obj) return obj;
     var copy = obj.constructor();
     for (var attr in obj) {
-        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+        if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
     }
     return copy;
 }
@@ -127,7 +127,45 @@ function mapAllPrimitive(obj,func,filter=()=>true){
   }
 }
 
-export {getPropertyByString,filterOne,objFilter,objIsEquiv,m,clone,mapAllPrimitive};
+function convertToText(obj) {
+    //create an array that will later be joined into a string.
+    var string = [];
+
+    //is object
+    //    Both arrays and objects seem to return "object"
+    //    when typeof(obj) is applied to them. So instead
+    //    I am checking to see if they have the property
+    //    join, which normal objects don't have but
+    //    arrays do.
+    if (obj == undefined) {
+    	return String(obj);
+    } else if (typeof(obj) == "object" && (obj.join == undefined)) {
+        for (let prop in obj) {
+        	if (obj.hasOwnProperty(prop))
+            string.push(prop + ": " + convertToText(obj[prop]));
+        };
+    return "{" + string.join(",") + "}";
+
+    //is array
+    } else if (typeof(obj) == "object" && !(obj.join == undefined)) {
+        for(let prop in obj) {
+            string.push(convertToText(obj[prop]));
+        }
+    return "[" + string.join(",") + "]";
+
+    //is function
+    } else if (typeof(obj) == "function") {
+        string.push(obj.toString())
+
+    //all other values can be done with JSON.stringify
+    } else {
+        string.push(JSON.stringify(obj))
+    }
+
+    return string.join(",");
+}
+
+export {getPropertyByString,filterOne,objFilter,objIsEquiv,m,clone,mapAllPrimitive,convertToText};
 
  //    #
  //   # #   #####  #####
@@ -152,6 +190,7 @@ class App extends React.Component {
     this._changeModalText = this._changeModalText.bind(this);
     this._updateNote = this._updateNote.bind(this);
     this._cancelEdit = this._cancelEdit.bind(this);
+    this._removeFile = this._removeFile.bind(this);
   }
   static fetchList(callback){
     const sort_field = 'timestamp';
@@ -212,7 +251,10 @@ class App extends React.Component {
         title
         description
         tags
-        file_path
+        files{
+          name
+          uid
+        }
       }
     }`};
     request.get(API_URL)
@@ -269,7 +311,7 @@ class App extends React.Component {
     }
     const q = {query:`
       mutation{
-        updateNote(id:"${this.state.modal.id}",title:"${this.state.modal.title||''}",description:"${encodeURI(this.state.modal.description||'')}",tags:${JSON.stringify(this.state.modal.tags)},file_path:"${this.state.modal.file_path||''}"){
+        updateNote(id:"${this.state.modal.id}",title:"${this.state.modal.title||''}",description:"${encodeURI(this.state.modal.description||'')}",tags:${JSON.stringify(this.state.modal.tags||[])},files:${convertToText(this.state.modal.files||[])}){
           id
         }
       }
@@ -289,6 +331,14 @@ class App extends React.Component {
     if(objIsEquiv(this.state.modal,this.state.original_note)||confirm('There are unsaved changes on this page. Do you want to leave without finishing?')){
       this._closeModal();
     }
+  }
+  _removeFile(uid){
+    if(!confirm('Remove this file?')) return;
+    let m = this.state.modal
+    m.files = filterOne(m.files,'uid',uid);
+    this.setState({
+      modal:m
+    })
   }
   componentDidUpdate(){
     // window.manager = WindowManager;
@@ -311,7 +361,8 @@ class App extends React.Component {
           _removeNote={this._removeNote}
           _changeModalText={this._changeModalText}
           _updateNote={this._updateNote}
-          _cancelEdit={this._cancelEdit} />
+          _cancelEdit={this._cancelEdit}
+          _removeFile={this._removeFile} />
       </div>
     )
   }
@@ -442,7 +493,7 @@ class Modal extends React.Component{
     super(props);
   }
   render(){
-    let modal,title,description,file_path,tags,timestamp,footer;
+    let modal,title,description,files,tags,timestamp,footer;
     if(typeof this.props.id==='undefined'){
       return null;
     }else if(typeof this.props.title === 'undefined'){
@@ -459,7 +510,7 @@ class Modal extends React.Component{
           </div>
         );
         description = <p>{this.props.description.split(/(?:\r\n|\r|\n)/g).map(v=>[v,<br />])}</p>
-        file_path = <a href={this.props.file_path}>Attachment</a>
+        files = <ListFiles files={this.props.files} editing={false} />
         tags = <p>{this.props.tags.join(', ')}</p>
         timestamp = <p>Last Update: {moment(new Date(this.props.timestamp).toISOString()).fromNow()}</p>
       }else{
@@ -477,15 +528,7 @@ class Modal extends React.Component{
             value={this.props.description}
             onChange={this.props._changeModalText.bind(this,'description')} />
         );
-        file_path=(
-          <div>
-            <input
-              type="text"
-              style={m(Theme.modal.inner.editing.text,Theme.modal.inner.editing.file_path)}
-              value={this.props.file_path}
-              onChange={this.props._changeModalText.bind(this,'file_path')} />
-          </div>
-        )
+        files=<ListFiles files={this.props.files} editing={true} _removeFile={this.props._removeFile}/>
         tags=(
           <div>
             <input
@@ -502,7 +545,7 @@ class Modal extends React.Component{
           </div>
         )
       }
-      modal = <div style={m(Theme.modal.inner)}>{title}{description}{file_path}{tags}{timestamp}{footer}</div>
+      modal = <div style={m(Theme.modal.inner)}>{title}{description}{files}{tags}{timestamp}{footer}</div>
     }
     return (
       <div style={m(Theme.modal)}>
@@ -518,15 +561,189 @@ Modal.propTypes = {
   id: React.PropTypes.string,
   title: React.PropTypes.string,
   description: React.PropTypes.string,
-  file_path: React.PropTypes.string,
+  files: React.PropTypes.arrayOf(React.PropTypes.object),
   tags: React.PropTypes.arrayOf(React.PropTypes.string),
   timestamp: React.PropTypes.string,
   forEditing: React.PropTypes.bool,
-  _closeModal: React.PropTypes.func
+  _closeModal: React.PropTypes.func.isRequired,
+  _removeFile: React.PropTypes.func.isRequired
 }
 
 Modal.defaultProps = {
   forEditing: false
+}
+
+ // #                      #######
+ // #       #  ####  ##### #       # #      ######  ####
+ // #       # #        #   #       # #      #      #
+ // #       #  ####    #   #####   # #      #####   ####
+ // #       #      #   #   #       # #      #           #
+ // #       # #    #   #   #       # #      #      #    #
+ // ####### #  ####    #   #       # ###### ######  ####
+
+class ListFiles extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      progress_bars: []
+    }
+    this._handleFileUpload = this._handleFileUpload.bind(this)
+  }
+  _renderList(files,editing){
+    return files.map(file=><FileItem {...file} key={file.uid} editing={editing} _removeFile={this.props._removeFile}/>);
+  }
+  _handleFileUpload(e){
+    let that = this;
+    // Check for the various File API support.
+    if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+      return alert('No HTML5 File API found, please try again with another browser.')
+    }
+
+    let files = e.target.files;
+    window.files_ = files;
+    for(let i=0,f;f=files[i];i++) {
+      let fileInfo = {
+        name: f.name,
+        type: f.type,
+        size: f.size,
+        lastModifiedDate: f.lastModifiedDate
+      }
+
+      console.log(fileInfo);
+
+      let reader = new FileReader();
+
+      reader.onload = (theFile=>{
+        return function(e){
+          console.log(e.target);
+          let progress_bars = that.state.progress_bars
+          progress_bars.push(<UploadProgress file_name={fileInfo.name} file_content={e.target.result} />)
+          that.setState({
+            progress_bars:progress_bars
+          })
+        }
+      })(f)
+
+      reader.readAsText(f)
+    }
+  }
+  render(){
+    let fileInput;
+    if(this.props.editing)
+      fileInput=(
+        <form encType="multipart/form-data" method="post" ref="files">
+          <input type="file" multiple onChange={this._handleFileUpload}/>
+        </form>
+      );
+    return (
+      <div>
+        {this._renderList(this.props.files,this.props.editing)}
+        {fileInput}
+        {this.state.progress_bars}
+      </div>
+    );
+  }
+}
+
+ListFiles.propTypes = {
+  files: React.PropTypes.arrayOf(React.PropTypes.object),
+  editing: React.PropTypes.bool,
+  _removeFile: React.PropTypes.func
+}
+
+ListFiles.defaultProps = {
+  files: [],
+  editing: false
+}
+
+class UploadProgress extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      progress: 0
+    }
+    this._upload = this._upload.bind(this)
+  }
+  componentDidMount(){
+    this._upload()
+  }
+  _upload(){
+    let that = this;
+
+    let updateProgress = function(e){
+      if(e.lengthComputable){
+        let percentComplete = e.loaded / e.total * 100;
+        console.log(percentComplete);
+        that.setState({
+          progress: percentComplete
+        })
+      }else{
+        console.log('Unable to compute length');
+      }
+    }
+    let transferComplete = function(e){
+      console.log('transfer complete');
+    }
+    let transferFailed = function(e){
+      console.log('transfer failed');
+    }
+    let transferCanceled = function(e){
+      console.log('transfer cancelled');
+    }
+
+    let xhr = new XMLHttpRequest();
+    xhr.addEventListener('progress',updateProgress);
+    xhr.addEventListener("load", transferComplete);
+    xhr.addEventListener("error", transferFailed);
+    xhr.addEventListener("abort", transferCanceled);
+
+    xhr.open('POST','upload',true);
+    xhr.send(`name=${escape(this.props.file_name)}&content=${this.props.file_content}`);
+  }
+  render(){
+    return <progress value={this.state.progress.toString()} max="100" />
+  }
+}
+
+UploadProgress.propTypes = {
+  file_name: React.PropTypes.string,
+  file_content: React.PropTypes.string
+}
+
+ // #######                 ###
+ // #       # #      ######  #  ##### ###### #    #
+ // #       # #      #       #    #   #      ##  ##
+ // #####   # #      #####   #    #   #####  # ## #
+ // #       # #      #       #    #   #      #    #
+ // #       # #      #       #    #   #      #    #
+ // #       # ###### ###### ###   #   ###### #    #
+
+class FileItem extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render(){
+    let removeButton;
+    if(this.props.editing) removeButton = <Icon type="times" onClick={this.props._removeFile.bind(this, this.props.uid)} />
+
+    return (
+      <div>
+        <a href={`getFile/${this.props.uid}`}>{this.props.name}</a>
+        {removeButton}
+      </div>
+    );
+  }
+}
+
+FileItem.propTypes = {
+  name: React.PropTypes.string.isRequired,
+  uid: React.PropTypes.string.isRequired,
+  editing: React.PropTypes.bool,
+  _removeFile: React.PropTypes.func
+}
+
+FileItem.defaultProps = {
+  editing: false
 }
 
 if (typeof document !== 'undefined') {

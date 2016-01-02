@@ -24,7 +24,8 @@
     "express-graphql": "~0.4.5",
     "moment": "~2.10.6",
     "superagent": "~1.6.1",
-    "object-assign": "~4.0.1"
+    "object-assign": "~4.0.1",
+    "body-parser": "~1.14.2"
   },
   "devDependencies": {
     "babel-core": "~6.3.17",

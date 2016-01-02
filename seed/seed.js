@@ -16,25 +16,17 @@ const notes = [
       "note",
       "unicorns"
     ],
-    file_path: null
+    files: []
   },
   {
     timestamp: new Date("2015-12-14T14:44:30Z"),
     title: "My Second Note",
-    description: "Second\nNote",
+    description: "Second Note\nsecond line.",
     tags: [
       "note",
       "second"
     ],
-    file_path: null
-  },
-  {
-    description: "Test Mutation updateNote",
-    tags: [
-      "updated"
-    ],
-    timestamp: new Date("2015-12-15T14:44:30Z"),
-    title: "Update 1"
+    files: [{name:"file1",uid:"0001"},{name:"file2",uid:"0002"}]
   }
 ]
 
