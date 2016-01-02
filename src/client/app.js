@@ -458,7 +458,7 @@ class Modal extends React.Component{
             </div>
           </div>
         );
-        description = <p>{this.props.description}</p>
+        description = <p>{this.props.description.split(/(?:\r\n|\r|\n)/g).map(v=>[v,<br />])}</p>
         file_path = <a href={this.props.file_path}>Attachment</a>
         tags = <p>{this.props.tags.join(', ')}</p>
         timestamp = <p>Last Update: {moment(new Date(this.props.timestamp).toISOString()).fromNow()}</p>
