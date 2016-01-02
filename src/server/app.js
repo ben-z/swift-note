@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
 import Note from './data/note'
+import File from './data/file'
 import graphqlHTTP from 'express-graphql'
 import {Schema} from './data/schema.js'
 import browserify from 'browserify'
@@ -17,7 +18,7 @@ import objectAssign from 'object-assign'
 Object.assign = Object.assign || objectAssign
 
 let app = express()
-app.use(bodyParser())
+app.use(bodyParser.json({limit:'50mb'}))
 app.use(cookieParser())
 
 app.set('views', __dirname + '/views')
@@ -56,8 +57,11 @@ app.get('/logout', (req,res)=>{
 })
 
 app.post('/upload',(req,res)=>{
-  console.log(req.body);
-  res.json('success')
+  let file = new File(req.body);
+  file.save(err=>{
+    if(err) throw err;
+    else res.json({id: file.id})
+  })
 })
 
 app.get('/app.js',(req,res)=>{

@@ -191,6 +191,7 @@ class App extends React.Component {
     this._updateNote = this._updateNote.bind(this);
     this._cancelEdit = this._cancelEdit.bind(this);
     this._removeFile = this._removeFile.bind(this);
+    this._appendFile = this._appendFile.bind(this);
   }
   static fetchList(callback){
     const sort_field = 'timestamp';
@@ -340,6 +341,13 @@ class App extends React.Component {
       modal:m
     })
   }
+  _appendFile(file){
+    let m = this.state.modal
+    m.files.push(file)
+    this.setState({
+      modal:m
+    })
+  }
   componentDidUpdate(){
     // window.manager = WindowManager;
     // if(this.state.modal){
@@ -362,7 +370,8 @@ class App extends React.Component {
           _changeModalText={this._changeModalText}
           _updateNote={this._updateNote}
           _cancelEdit={this._cancelEdit}
-          _removeFile={this._removeFile} />
+          _removeFile={this._removeFile}
+          _appendFile={this._appendFile} />
       </div>
     )
   }
@@ -492,6 +501,9 @@ class Modal extends React.Component{
   constructor(props){
     super(props);
   }
+  componentWillUnmount(){
+    alert('unmounting modal')
+  }
   render(){
     let modal,title,description,files,tags,timestamp,footer;
     if(typeof this.props.id==='undefined'){
@@ -528,7 +540,8 @@ class Modal extends React.Component{
             value={this.props.description}
             onChange={this.props._changeModalText.bind(this,'description')} />
         );
-        files=<ListFiles files={this.props.files} editing={true} _removeFile={this.props._removeFile}/>
+        files=<ListFiles files={this.props.files} editing={true} _removeFile={this.props._removeFile}
+        _appendFile={this.props._appendFile}/>
         tags=(
           <div>
             <input
@@ -549,9 +562,9 @@ class Modal extends React.Component{
     }
     return (
       <div style={m(Theme.modal)}>
-        <div style={m(Theme.modal.blur)} onClick={this.props._closeModal}/>
+        <div style={m(Theme.modal.blur)} onClick={this.props._cancelEdit}/>
         {modal}
-        <div style={m(Theme.modal.close)} onClick={this.props._closeModal}><Icon type="times" twox={true}/></div>
+        <div style={m(Theme.modal.close)} onClick={this.props._cancelEdit}><Icon type="times" twox={true}/></div>
       </div>
     )
   }
@@ -566,7 +579,8 @@ Modal.propTypes = {
   timestamp: React.PropTypes.string,
   forEditing: React.PropTypes.bool,
   _closeModal: React.PropTypes.func.isRequired,
-  _removeFile: React.PropTypes.func.isRequired
+  _removeFile: React.PropTypes.func.isRequired,
+  _appendFile: React.PropTypes.func.isRequired,
 }
 
 Modal.defaultProps = {
@@ -608,16 +622,24 @@ class ListFiles extends React.Component{
         size: f.size,
         lastModifiedDate: f.lastModifiedDate
       }
+      if(fileInfo.size>20000000){
+        return alert('The file is too large (max. 20mb)')
+      }
 
-      console.log(fileInfo);
+      // console.log(fileInfo);
 
       let reader = new FileReader();
 
       reader.onload = (theFile=>{
         return function(e){
-          console.log(e.target);
+          // console.log(e.target);
           let progress_bars = that.state.progress_bars
-          progress_bars.push(<UploadProgress file_name={fileInfo.name} file_content={e.target.result} />)
+          progress_bars.push(
+            <UploadProgress
+              file_name={fileInfo.name}
+              file_content={e.target.result}
+              _appendFile={that.props._appendFile} />
+          );
           that.setState({
             progress_bars:progress_bars
           })
@@ -648,7 +670,8 @@ class ListFiles extends React.Component{
 ListFiles.propTypes = {
   files: React.PropTypes.arrayOf(React.PropTypes.object),
   editing: React.PropTypes.bool,
-  _removeFile: React.PropTypes.func
+  _removeFile: React.PropTypes.func,
+  _appendFile: React.PropTypes.func
 }
 
 ListFiles.defaultProps = {
@@ -673,7 +696,7 @@ class UploadProgress extends React.Component{
     let updateProgress = function(e){
       if(e.lengthComputable){
         let percentComplete = e.loaded / e.total * 100;
-        console.log(percentComplete);
+        // console.log(percentComplete);
         that.setState({
           progress: percentComplete
         })
@@ -697,8 +720,17 @@ class UploadProgress extends React.Component{
     xhr.addEventListener("error", transferFailed);
     xhr.addEventListener("abort", transferCanceled);
 
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        var res = JSON.parse(xhr.responseText);
+        that.props._appendFile({name:that.props.file_name,uid:res.id})
+      }
+    };
+
     xhr.open('POST','upload',true);
-    xhr.send(`name=${escape(this.props.file_name)}&content=${this.props.file_content}`);
+    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+    xhr.send(JSON.stringify({name:escape(this.props.file_name),content:this.props.file_content}));
   }
   render(){
     return <progress value={this.state.progress.toString()} max="100" />
@@ -728,7 +760,7 @@ class FileItem extends React.Component {
 
     return (
       <div>
-        <a href={`getFile/${this.props.uid}`}>{this.props.name}</a>
+        <a href={`files/${this.props.uid}`}>{this.props.name}</a>
         {removeButton}
       </div>
     );
