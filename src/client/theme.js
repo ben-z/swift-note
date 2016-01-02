@@ -6,6 +6,8 @@ function px_to_num(px){
 function num_to_px(num){
   return num+'px';
 }
+
+const FONT_FAMILY = `'Brandon_reg', serif`;
 const ITEM_HEIGHT = '34px';
 const PRIMARY_COLOR = '#2f83de';
 const PANEL_BACKGROUND = '#448fe1';
@@ -24,7 +26,7 @@ var theme = {
 
   body: {
     backgroundColor: PRIMARY_COLOR,
-    fontFamily: `'Brandon_reg', serif`
+    fontFamily: FONT_FAMILY
   },
 
   //  #    # #####    ##   #####  #####  ###### #####
@@ -127,7 +129,29 @@ var theme = {
     	marginLeft: num_to_px(-(px_to_num(MODAL_WIDTH)/2)),
     	width: MODAL_WIDTH,
     	overflowX: 'hidden',
-      color: 'white'
+      color: 'white',
+      editing: {
+        text: {
+          backgroundColor: 'transparent',
+          color: 'white',
+          border: 'none',
+          outline: 'none',
+          fontFamily: FONT_FAMILY
+        },
+        title: {
+          // POSSIBLE ENHANCEMENT + BORDERBOTTOM textAlign: 'center',
+          fontSize: '2em',
+          fontWeight: 'bold',
+          border: `2px solid rgba(255,255,255,0.3)`,
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis'
+        },
+        description: {
+          width:'100%',
+          border: `2px solid rgba(255,255,255,0.3)`,
+
+        }
+      }
     },
     close: {
       position:'fixed',

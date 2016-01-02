@@ -101,7 +101,33 @@ function m(){
   return Object.filter(res,val=>{return (typeof val !== 'object')})
 }
 
-export {getPropertyByString,filterOne,objFilter,objIsEquiv,m};
+function clone(obj) {
+    if (null == obj || "object" != typeof obj) return obj;
+    var copy = obj.constructor();
+    for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+    }
+    return copy;
+}
+
+function mapAllPrimitive(obj,func,filter=()=>true){
+  let t = typeof obj;
+  if(t !== 'object'){
+    if(filter(obj)){return func(obj)}
+    else{return obj}
+  }else if(Object.prototype.toString.call(obj) === '[object Array]'){
+    return obj.map(v=>mapAllPrimitive(v,func,filter))
+  }else{
+    let newobj={};
+    for(let attr in obj){
+      if (obj.hasOwnProperty(attr)) newobj[attr] = mapAllPrimitive(obj[attr],func,filter);
+    }
+    if (objIsEquiv(newobj,{})) return obj;
+    else return newobj;
+  }
+}
+
+export {getPropertyByString,filterOne,objFilter,objIsEquiv,m,clone,mapAllPrimitive};
 
  //    #
  //   # #   #####  #####
@@ -116,12 +142,16 @@ class App extends React.Component {
     super(props)
     this.state = {
       notes: props.notes,
-      modal: false
+      modal: false,
+      original_note: false
     }
     this._updateList = this._updateList.bind(this);
     this._openModal = this._openModal.bind(this);
     this._closeModal = this._closeModal.bind(this);
     this._removeNote = this._removeNote.bind(this);
+    this._changeModalText = this._changeModalText.bind(this);
+    this._updateNote = this._updateNote.bind(this);
+    this._cancelEdit = this._cancelEdit.bind(this);
   }
   static fetchList(callback){
     const sort_field = 'timestamp';
@@ -152,8 +182,8 @@ class App extends React.Component {
       return <NoteItem key={item.id} {...item} _openModal={this._openModal} _removeNote={this._removeNote}/>
     })
   }
-  _openModal(id,forEditing,e){
-    e.stopPropagation();
+  _openModal(id,forEditing=false,e){
+    if(e) e.stopPropagation();
     // console.log('id',id);
     // console.log('forEditing',forEditing);
     // console.log('event',e);
@@ -166,8 +196,11 @@ class App extends React.Component {
     this._fetchNote(id,(note)=>{
       if(!note) return alert('note not found, please refresh the window');
       note.forEditing = forEditing;
+      // Decode all strings
+      note = mapAllPrimitive(note, decodeURI, o=>typeof o === 'string')
       this.setState({
-        modal: note
+        modal: note,
+        original_note: clone(note)
       })
     })
   }
@@ -191,11 +224,12 @@ class App extends React.Component {
   }
   _closeModal(){
     this.setState({
-      modal: false
+      modal: false,
+      original_note: false
     })
   }
   _removeNote(id,e){
-    e.stopPropagation();
+    if(e) e.stopPropagation();
     if (!confirm('Remove this note?')) {
       return ;
     }
@@ -211,13 +245,50 @@ class App extends React.Component {
         else{
           if(!res.body.data.removeNote.id) console.log('note does not exist');
           let notes_removed = filterOne(this.state.notes,'id',id);
-          console.log(notes_removed);
           this.setState({
             notes: notes_removed,
             modal:false
           })
         }
       })
+  }
+  _changeModalText(property,e){
+    let m = this.state.modal;
+    if(property==='tags'){
+      m[property] = e.target.value.split(',')
+    }else{
+      m[property] = e.target.value
+    }
+    this.setState({
+      modal: m
+    })
+  }
+  _updateNote(){
+    if(objIsEquiv(this.state.modal,this.state.original_note)){
+      return this._openModal(this.state.modal.id)
+    }
+    const q = {query:`
+      mutation{
+        updateNote(id:"${this.state.modal.id}",title:"${this.state.modal.title||''}",description:"${encodeURI(this.state.modal.description||'')}",tags:${JSON.stringify(this.state.modal.tags)},file_path:"${this.state.modal.file_path||''}"){
+          id
+        }
+      }
+    `}
+    let that = this;
+    request.post(API_URL)
+      .query(q)
+      .end((err,res)=>{
+        if(err) throw err;
+        else{
+          that._openModal(res.body.data.updateNote.id)
+          that._updateList()
+        }
+      })
+  }
+  _cancelEdit(){
+    if(objIsEquiv(this.state.modal,this.state.original_note)||confirm('There are unsaved changes on this page. Do you want to leave without finishing?')){
+      this._closeModal();
+    }
   }
   componentDidUpdate(){
     // window.manager = WindowManager;
@@ -233,7 +304,14 @@ class App extends React.Component {
         <div style={m(Theme.wrapper)}>
           {this._renderList(this.state.notes)}
         </div>
-        <Modal {...this.state.modal} _closeModal={this._closeModal} _openModal={this._openModal} _removeNote={this._removeNote} />
+        <Modal
+          {...this.state.modal}
+          _closeModal={this._closeModal}
+          _openModal={this._openModal}
+          _removeNote={this._removeNote}
+          _changeModalText={this._changeModalText}
+          _updateNote={this._updateNote}
+          _cancelEdit={this._cancelEdit} />
       </div>
     )
   }
@@ -364,21 +442,67 @@ class Modal extends React.Component{
     super(props);
   }
   render(){
-    let modal,title,description,file_path,tags,timestamp;
+    let modal,title,description,file_path,tags,timestamp,footer;
     if(typeof this.props.id==='undefined'){
       return null;
     }else if(typeof this.props.title === 'undefined'){
       modal = 'Updating...'
     }else{
       if(!this.props.forEditing){
-        title = <div><h1 style={Theme.modal.title}>{this.props.title}</h1><div style={m(Theme.modal.subtitleActions)}><Icon extraStyles={[Theme.modal.subtitleActions.icon]} type="pencil" onClick={this.props._openModal.bind(this,this.props.id,true)}/>
-        <Icon extraStyles={[Theme.modal.subtitleActions.icon]} type="times" onClick={this.props._removeNote.bind(this, this.props.id)} /></div></div>
+        title = (
+          <div>
+            <h1 style={m(Theme.modal.title)}>{this.props.title}</h1>
+            <div style={m(Theme.modal.subtitleActions)}>
+              <Icon extraStyles={[Theme.modal.subtitleActions.icon]} type="pencil" onClick={this.props._openModal.bind(this,this.props.id,true)}/>
+              <Icon extraStyles={[Theme.modal.subtitleActions.icon]} type="times" onClick={this.props._removeNote.bind(this, this.props.id)} />
+            </div>
+          </div>
+        );
         description = <p>{this.props.description}</p>
         file_path = <a href={this.props.file_path}>Attachment</a>
         tags = <p>{this.props.tags.join(', ')}</p>
         timestamp = <p>Last Update: {moment(new Date(this.props.timestamp).toISOString()).fromNow()}</p>
-      }else{console.log('something');}
-      modal = <div style={m(Theme.modal.inner)}>{title}{description}{file_path}{tags}{timestamp}</div>
+      }else{
+        title=(
+          <div>
+            <input
+              style={m(Theme.modal.inner.editing.text,Theme.modal.inner.editing.title)}
+              value={this.props.title}
+              onChange={this.props._changeModalText.bind(this,'title')} />
+          </div>
+        );
+        description=(
+          <textarea
+            style={m(Theme.modal.inner.editing.text,Theme.modal.inner.editing.description)}
+            value={this.props.description}
+            onChange={this.props._changeModalText.bind(this,'description')} />
+        );
+        file_path=(
+          <div>
+            <input
+              type="text"
+              style={m(Theme.modal.inner.editing.text,Theme.modal.inner.editing.file_path)}
+              value={this.props.file_path}
+              onChange={this.props._changeModalText.bind(this,'file_path')} />
+          </div>
+        )
+        tags=(
+          <div>
+            <input
+              type="text"
+              style={m(Theme.modal.inner.editing.text,Theme.modal.inner.editing.tags)}
+              value={this.props.tags.join(',')}
+              onChange={this.props._changeModalText.bind(this,'tags')} />
+          </div>
+        );
+        footer=(
+          <div>
+            <button onClick={this.props._updateNote} type="button">Update</button>
+            <button onClick={this.props._cancelEdit} type="button">Cancel</button>
+          </div>
+        )
+      }
+      modal = <div style={m(Theme.modal.inner)}>{title}{description}{file_path}{tags}{timestamp}{footer}</div>
     }
     return (
       <div style={m(Theme.modal)}>

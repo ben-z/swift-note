@@ -1,7 +1,7 @@
 'use strict';
 
 import {expect} from 'chai';
-import {getPropertyByString,filterOne,objFilter,objIsEquiv,m as mergeStylesheets} from '../../src/client/app'
+import {getPropertyByString,filterOne,objFilter,objIsEquiv,m as mergeStylesheets,clone,mapAllPrimitive} from '../../src/client/app'
 
 describe('helpers', ()=> {
   describe('getPropertyByString', ()=> {
@@ -54,6 +54,8 @@ describe('helpers', ()=> {
       let o4_copy = {a:1,b:2,c:[1,2]}
       let o5 = {a:1,b:2,c:{d:3,e:4,f:{g:5,h:6}}} // nested
       let o5_copy = {a:1,b:2,c:{d:3,e:4,f:{g:5,h:6}}}
+      let o6 = {a: ""}
+      let o6_2 = {a: "123"}
 
       expect(objIsEquiv(o1,o2)).to.be.true;
       expect(objIsEquiv(o1,o3)).to.be.false;
@@ -62,6 +64,7 @@ describe('helpers', ()=> {
       expect(objIsEquiv('string','string')).to.be.true;
       expect(objIsEquiv(o5,o4)).to.be.false;
       expect(objIsEquiv(o5,'string')).to.be.false;
+      expect(objIsEquiv(o6,o6_2)).to.be.false;
     })
   })
   describe('mergeStylesheets',()=>{
@@ -85,6 +88,36 @@ describe('helpers', ()=> {
       }
 
       expect(mergeStylesheets(o1,o2)).to.be.eql(res)
+    })
+  })
+  describe('clone',()=>{
+    it('should return an object with the exact the same properties as the original',()=>{
+      let o = {a:1,b:2}
+
+      expect(clone(o)).to.be.eql(o)
+    })
+  })
+  describe('mapAllPrimitive',()=>{
+    it('should apply func to all primitive values in obj',()=>{
+      let o = {a:1,b:2}
+
+      expect(mapAllPrimitive(o,val=>++val)).to.be.eql({a:2,b:3})
+    })
+    it('should apply func to all primitive values in an array',()=>{
+      let o = [1,2,3,4]
+
+      expect(mapAllPrimitive(o,val=>++val)).to.be.eql([2,3,4,5])
+    })
+    it('should apply func to all primitive values in a nested object',()=>{
+      let o = {a:1,b:[1,2],c:{d:5}}
+
+      expect(mapAllPrimitive(o,val=>++val)).to.be.eql({a:2,b:[2,3],c:{d:6}})
+    })
+    it('should be able to handle custom filters',()=>{
+      let o = {a:1,b:[1,2],c:{d:'something'}}
+
+      expect(mapAllPrimitive(o,val=>val,o=>typeof o !== 'number')).to.be.eql(o)
+      expect(mapAllPrimitive(o,v=>v.concat(' edited'),o=>typeof o === 'string')).to.be.eql({a:1,b:[1,2],c:{d:'something edited'}})
     })
   })
 });

@@ -146,7 +146,7 @@ const NoteMutation = new GraphQLObjectType({
       type: NoteType,
       args: {
         id: {
-          type: GraphQLString
+          type: new GraphQLNonNull(GraphQLString)
         },
         title: {
           type: GraphQLString
@@ -161,13 +161,13 @@ const NoteMutation = new GraphQLObjectType({
           type: GraphQLString
         }
       },
-      resolve(paren,{id, title, description, tags, file_path},{fieldASTs}){
+      resolve(parent,{id, title, description, tags, file_path},{fieldASTs}){
          var projections = getProjection(fieldASTs[0]);
          let updateObj = {}
-         if(title) updateObj.title = title;
-         if(description) updateObj.description = description;
-         if(tags) updateObj.tags = tags;
-         if(file_path) updateObj.file_path = file_path;
+         if(typeof title !== 'undefined') updateObj.title = title;
+         if(typeof description !== 'undefined') updateObj.description = description;
+         if(typeof tags !== 'undefined') updateObj.tags = tags;
+         if(typeof file_path !== 'undefined') updateObj.file_path = file_path;
          if(0 !== Object.keys(updateObj).length) updateObj.timestamp = Date();
 
          return Note.findByIdAndUpdate(id,updateObj,

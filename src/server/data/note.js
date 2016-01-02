@@ -5,16 +5,19 @@ const NoteSchema = new mongoose.Schema({
     type: Date
   },
   title: {
-    type: String
+    type: String,
+    default: ''
   },
   description: {
-    type: String
+    type: String,
+    default:''
   },
   tags: {
     type: [String]
   },
   file_path: {
-    type: String
+    type: String,
+    default:''
   }
 },{collection: 'swiftnote'});
 
