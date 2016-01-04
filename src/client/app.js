@@ -760,7 +760,7 @@ class FileItem extends React.Component {
 
     return (
       <div>
-        <a href={`files/${this.props.uid}`}>{this.props.name}</a>
+        <a href={`file/${this.props.uid}/download`}>{this.props.name}</a>
         {removeButton}
       </div>
     );

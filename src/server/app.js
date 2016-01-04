@@ -64,6 +64,23 @@ app.post('/upload',(req,res)=>{
   })
 })
 
+app.get('/file/:uid',(req,res)=>{
+  File.findById(req.params.uid,(err,file)=>{
+    if (err) res.json({success: false, err:err});
+    if (!file) res.json({success:false, err: 'file not found'});
+    res.json({success:true,data:file});
+  })
+})
+
+app.get('/file/:uid/download',(req,res)=>{
+  File.findById(req.params.uid,(err,file)=>{
+    if (err) res.send(err);
+    if (!file) res.send('file not found')
+    res.setHeader('Content-disposition', `attachment; filename=${file.name}`)
+    res.send(file.content);
+  })
+})
+
 app.get('/app.js',(req,res)=>{
   browserify().add(__dirname+'/../client/app.js').transform(babelify).bundle().pipe(res);
 })
