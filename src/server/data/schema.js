@@ -8,7 +8,8 @@ import {
   GraphQLNonNull,
   GraphQLBoolean,
   GraphQLEnumType,
-  GraphQLInputObjectType
+  GraphQLInputObjectType,
+  GraphQLInt
 } from 'graphql';
 
 import Note from './note'
@@ -32,6 +33,15 @@ const FileOutputType = new GraphQLObjectType({
     name: {
       type: GraphQLString
     },
+    size:{
+      type: GraphQLInt
+    },
+    lastModifiedDate:{
+      type: GraphQLString
+    },
+    uploadDate:{
+      type: GraphQLString
+    },
     uid: {
       type: GraphQLString
     }
@@ -42,6 +52,15 @@ const FileInputType = new GraphQLInputObjectType({
   name: 'FileIn',
   fields: {
     name: {
+      type: GraphQLString
+    },
+    size:{
+      type: GraphQLInt
+    },
+    lastModifiedDate:{
+      type: GraphQLString
+    },
+    uploadDate:{
       type: GraphQLString
     },
     uid: {
@@ -157,6 +176,7 @@ const NoteMutation = new GraphQLObjectType({
       },
       resolve(parent, noteobj) {
         noteobj.timestamp = Date();
+        console.log(noteobj);
         let note = new Note(noteobj)
 
         return note.save()

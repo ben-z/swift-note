@@ -602,9 +602,23 @@ class ListFiles extends React.Component{
       progress_bars: []
     }
     this._handleFileUpload = this._handleFileUpload.bind(this)
+    this._updateProgress = this._updateProgress.bind(this)
   }
   _renderList(files,editing){
     return files.map(file=><FileItem {...file} key={file.uid} editing={editing} _removeFile={this.props._removeFile}/>);
+  }
+  _updateProgress(pObj,remove){
+    let p_bars = this.state.progress_bars;
+    for (var i = 0, p; p=p_bars[i]; i++) {
+      if(pObj.id === p.id && pObj.name ===p.name){
+        if(remove) p_bars.splice(i,1);
+        else p_bars.splice(i,1,pObj);
+        return this.setState(p_bars);
+      }else if(!p_bars[i+1]){
+        p_bars.push(pObj);
+        return this.setState(p_bars);
+      }
+    }
   }
   _handleFileUpload(e){
     let that = this;
@@ -616,37 +630,46 @@ class ListFiles extends React.Component{
     let files = e.target.files;
     window.files_ = files;
     for(let i=0,f;f=files[i];i++) {
-      let fileInfo = {
-        name: f.name,
-        type: f.type,
-        size: f.size,
-        lastModifiedDate: f.lastModifiedDate
-      }
-      if(fileInfo.size>20000000){
+      // let fileInfo = {
+      //   name: f.name,
+      //   type: f.type,
+      //   size: f.size,
+      //   lastModifiedDate: f.lastModifiedDate
+      // }
+      if(f.size>20000000){
         return alert('The file is too large (max. 20mb)')
       }
+      let progress = {
+        id: Math.floor(Math.random()*100),
+        name: f.name,
+        percent: 0
+      }
 
-      // console.log(fileInfo);
+      let data = new FormData();
+      data.append('files',f);
 
-      let reader = new FileReader();
-
-      reader.onload = (theFile=>{
-        return function(e){
-          // console.log(e.target);
-          let progress_bars = that.state.progress_bars
-          progress_bars.push(
-            <UploadProgress
-              file_name={fileInfo.name}
-              file_content={e.target.result}
-              _appendFile={that.props._appendFile} />
-          );
-          that.setState({
-            progress_bars:progress_bars
+      let request = new XMLHttpRequest();
+      request.onreadystatechange = function(){
+        if(request.readyState === 4 && request.status == 200){
+          console.debug('Upload complete!');
+          that.props._appendFile({
+            name:f.name,
+            size:f.size,
+            lastModifiedDate:f.lastModifiedDate.toString(),
+            uid: JSON.parse(request.response).uids[0].uid,
+            uploadDate: (new Date()).toString()
           })
         }
-      })(f)
+      }
 
-      reader.readAsText(f)
+      request.upload.addEventListener('progress', (e)=>{
+        let percent = Math.ceil(e.loaded/e.total) * 100;
+        progress.percent = percent;
+        that._updateProgress(progress);
+      });
+
+      request.open('POST','upload');
+      request.send(data);
     }
   }
   render(){

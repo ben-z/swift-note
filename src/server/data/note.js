@@ -18,6 +18,9 @@ const NoteSchema = new mongoose.Schema({
   files: {
     type: [{
       name: String,
+      size: Number,
+      lastModifiedDate: Date,
+      uploadDate: Date,
       uid: String
     }]
   }

@@ -1,8 +1,10 @@
 // Inspirations: https://github.com/RisingStack/graphql-server
 
+import fs from 'fs'
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
+import multer from 'multer'
 import mongoose from 'mongoose'
 import Note from './data/note'
 import File from './data/file'
@@ -16,6 +18,8 @@ import ClientApp from '../client/app'
 import objectAssign from 'object-assign'
 // Object.assign fallback
 Object.assign = Object.assign || objectAssign
+
+let upload = multer({dest:'uploads/'})
 
 let app = express()
 app.use(bodyParser.json({limit:'50mb'}))
@@ -56,13 +60,22 @@ app.get('/logout', (req,res)=>{
   res.send('<a href="/graphql">back to graphql</a><br /><a href="/login">login</a>');
 })
 
-app.post('/upload',(req,res)=>{
-  let file = new File(req.body);
-  file.save(err=>{
-    if(err) throw err;
-    else res.json({id: file.id})
-  })
+app.post('/upload',upload.array('files'),(req,res)=>{
+  console.log(req.files);
+  res.json({uids: req.files.map(f=>{return {name:f.originalname,uid:f.filename}})});
+  // Retrieving file
+  // var readStream = fileSystem.createReadStream(filePath);
+  //   // We replaced all the event handlers with a simple call to readStream.pipe()
+  //   readStream.pipe(response);
 })
+
+// app.post('/upload',(req,res)=>{
+//   let file = new File(req.body);
+//   file.save(err=>{
+//     if(err) throw err;
+//     else res.json({id: file.id})
+//   })
+// })
 
 app.get('/file/:uid',(req,res)=>{
   File.findById(req.params.uid,(err,file)=>{
@@ -74,10 +87,10 @@ app.get('/file/:uid',(req,res)=>{
 
 app.get('/file/:uid/download',(req,res)=>{
   File.findById(req.params.uid,(err,file)=>{
-    if (err) res.send(err);
-    if (!file) res.send('file not found')
+    if (err) return res.send(err);
+    if (!file) return res.send('file not found')
     res.setHeader('Content-disposition', `attachment; filename=${file.name}`)
-    res.send(file.content);
+    return res.send(file.content);
   })
 })
 
