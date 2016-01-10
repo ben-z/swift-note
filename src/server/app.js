@@ -85,6 +85,8 @@ app.get('/app.js',(req,res)=>{
   browserify().add(__dirname+'/../client/app.js').transform(babelify).bundle().pipe(res);
 })
 
+app.use('/css', express.static(__dirname+'/../client/css'));
+
 app.use('/fonts', express.static(__dirname+'/../client/fonts'));
 
 app.use('/graphql',(req,res,next)=>{
