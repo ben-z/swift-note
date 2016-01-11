@@ -563,11 +563,13 @@ class Modal extends React.Component{
         _appendFile={this.props._appendFile}/>
         tags=(
           <div>
-            <input
-              type="text"
-              style={m(Theme.modal.inner.editing.text,Theme.modal.inner.editing.tags)}
-              value={this.props.tags.join(',')}
-              onChange={this.props._changeModalText.bind(this,'tags')} />
+            <label>Tags:&nbsp;
+              <input
+                type="text"
+                style={m(Theme.modal.inner.editing.text,Theme.modal.inner.editing.tags)}
+                value={this.props.tags.join(',')}
+                onChange={this.props._changeModalText.bind(this,'tags')} />
+            </label>
           </div>
         );
         footer=(
