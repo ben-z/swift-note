@@ -6,7 +6,8 @@ Take notes and store files on the go.
 
 1. `git clone https://github.com/ben-z/swift-note.git`
 2. `cd swift-note`
-3. `npm run seed && npm run start_local`
+3. `npm install --dev`
+4. `npm run seed && npm run start_local`
 
 TODO:
 
