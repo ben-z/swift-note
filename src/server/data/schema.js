@@ -193,7 +193,7 @@ const NoteMutation = new GraphQLObjectType({
       type: NoteType,
       args: {
         id: {
-          type: new GraphQLNonNull(GraphQLString)
+          type: GraphQLString
         },
         title: {
           type: GraphQLString
@@ -209,16 +209,17 @@ const NoteMutation = new GraphQLObjectType({
         }
       },
       resolve(parent,{id, title, description, tags, files},{fieldASTs}){
-         var projections = getProjection(fieldASTs[0]);
-         let updateObj = {}
-         if(typeof title !== 'undefined') updateObj.title = title;
-         if(typeof description !== 'undefined') updateObj.description = description;
-         if(typeof tags !== 'undefined') updateObj.tags = tags;
-         if(typeof files !== 'undefined') updateObj.files = files;
-         if(0 !== Object.keys(updateObj).length) updateObj.timestamp = Date();
+        id = id || (new Note()).id;
+        var projections = getProjection(fieldASTs[0]);
+        let updateObj = {}
+        if(typeof title !== 'undefined') updateObj.title = title;
+        if(typeof description !== 'undefined') updateObj.description = description;
+        if(typeof tags !== 'undefined') updateObj.tags = tags;
+        if(typeof files !== 'undefined') updateObj.files = files;
+        if(0 !== Object.keys(updateObj).length) updateObj.timestamp = Date();
 
-         return Note.findByIdAndUpdate(id,updateObj,
-           {new:true,upsert:true,select:projections});
+        return Note.findByIdAndUpdate(id,updateObj,
+          {new:true,upsert:true,select:projections});
       }
     },
     // @return: The removed Note

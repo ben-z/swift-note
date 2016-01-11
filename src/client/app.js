@@ -192,6 +192,7 @@ class App extends React.Component {
     this._cancelEdit = this._cancelEdit.bind(this);
     this._removeFile = this._removeFile.bind(this);
     this._appendFile = this._appendFile.bind(this);
+    this._openBlankModal = this._openBlankModal.bind(this)
   }
   static fetchList(callback){
     const sort_field = 'timestamp';
@@ -350,6 +351,21 @@ class App extends React.Component {
       modal:m
     })
   }
+  _openBlankModal(){
+    let m = {
+      id: "",
+      title: "New Note",
+      description: "",
+      tags:[],
+      files:[],
+      timestamp: new Date().toString(),
+      forEditing:true
+    };
+    this.setState({
+      modal: m,
+      original_note: clone(m)
+    })
+  }
   componentDidUpdate(){
     // window.manager = WindowManager;
     // if(this.state.modal){
@@ -362,6 +378,7 @@ class App extends React.Component {
     return (
       <div style={m(Theme.body)}>
         <div style={m(Theme.wrapper)}>
+          <button onClick={this._openBlankModal}>Add</button>
           {this._renderList(this.state.notes)}
         </div>
         <Modal
