@@ -21,6 +21,7 @@ const NoteSchema = new mongoose.Schema({
       size: Number,
       lastModifiedDate: Date,
       uploadDate: Date,
+      file_type: String,
       uid: String
     }]
   }

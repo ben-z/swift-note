@@ -42,6 +42,9 @@ const FileOutputType = new GraphQLObjectType({
     uploadDate:{
       type: GraphQLString
     },
+    file_type: {
+      type: GraphQLString
+    },
     uid: {
       type: GraphQLString
     }
@@ -61,6 +64,9 @@ const FileInputType = new GraphQLInputObjectType({
       type: GraphQLString
     },
     uploadDate:{
+      type: GraphQLString
+    },
+    file_type: {
       type: GraphQLString
     },
     uid: {

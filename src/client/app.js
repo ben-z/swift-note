@@ -254,6 +254,8 @@ class App extends React.Component {
         tags
         files{
           name
+          size
+          file_type
           uid
         }
       }
@@ -636,6 +638,7 @@ class ListFiles extends React.Component{
       //   size: f.size,
       //   lastModifiedDate: f.lastModifiedDate
       // }
+      console.log('Uploading file:',f);
       if(f.size>20000000){
         return alert('The file is too large (max. 20mb)')
       }
@@ -648,28 +651,29 @@ class ListFiles extends React.Component{
       let data = new FormData();
       data.append('files',f);
 
-      let request = new XMLHttpRequest();
-      request.onreadystatechange = function(){
-        if(request.readyState === 4 && request.status == 200){
+      let xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function(){
+        if(xhr.readyState === 4 && xhr.status == 200){
           console.debug('Upload complete!');
           that.props._appendFile({
             name:f.name,
             size:f.size,
+            file_type: f.type,
             lastModifiedDate:f.lastModifiedDate.toString(),
-            uid: JSON.parse(request.response).uids[0].uid,
+            uid: JSON.parse(xhr.response).uids[0].uid,
             uploadDate: (new Date()).toString()
           })
         }
       }
 
-      request.upload.addEventListener('progress', (e)=>{
+      xhr.upload.addEventListener('progress', (e)=>{
         let percent = Math.ceil(e.loaded/e.total) * 100;
         progress.percent = percent;
         that._updateProgress(progress);
       });
 
-      request.open('POST','upload');
-      request.send(data);
+      xhr.open('POST','upload');
+      xhr.send(data);
     }
   }
   render(){
@@ -780,10 +784,11 @@ class FileItem extends React.Component {
   render(){
     let removeButton;
     if(this.props.editing) removeButton = <Icon type="times" onClick={this.props._removeFile.bind(this, this.props.uid)} />
+    console.log('FileItem props:', this.props);
 
     return (
       <div>
-        <a href={`file/${this.props.uid}/download`}>{this.props.name}</a>
+        <a href={`file/download/${encodeURIComponent(this.props.name)}/${encodeURIComponent(this.props.uid)}/${encodeURIComponent(this.props.file_type||'text/plain')}/${encodeURIComponent(this.props.size)}`}>{this.props.name}</a>
         {removeButton}
       </div>
     );
@@ -793,6 +798,8 @@ class FileItem extends React.Component {
 FileItem.propTypes = {
   name: React.PropTypes.string.isRequired,
   uid: React.PropTypes.string.isRequired,
+  size: React.PropTypes.number.isRequired,
+  file_type: React.PropTypes.string.isRequired,
   editing: React.PropTypes.bool,
   _removeFile: React.PropTypes.func
 }

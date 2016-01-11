@@ -63,35 +63,34 @@ app.get('/logout', (req,res)=>{
 app.post('/upload',upload.array('files'),(req,res)=>{
   console.log(req.files);
   res.json({uids: req.files.map(f=>{return {name:f.originalname,uid:f.filename}})});
+})
+
+app.get('/file/download/:name/:uid/:type/:size',(req,res)=>{
+  let name = decodeURIComponent(req.params.name);
+  let uid = decodeURIComponent(req.params.uid);
+  let size = decodeURIComponent(req.params.size);
+  let type = decodeURIComponent(req.params.type);
+
+  console.log('File Requested:',name,uid,size,type);
+
+  let path = `uploads/${uid}`
+
   // Retrieving file
-  // var readStream = fileSystem.createReadStream(filePath);
-  //   // We replaced all the event handlers with a simple call to readStream.pipe()
-  //   readStream.pipe(response);
-})
+  try{
+    fs.statSync(path); // will throw error if the file does not exist
 
-// app.post('/upload',(req,res)=>{
-//   let file = new File(req.body);
-//   file.save(err=>{
-//     if(err) throw err;
-//     else res.json({id: file.id})
-//   })
-// })
+    res.setHeader('Content-Description', 'File Transfer');
+    if(type) res.setHeader('Content-Type', type);
+    if(size) res.setHeader('Content-Length', size)
+    res.setHeader('Content-Disposition', `attachment; filename="${name}"`)
 
-app.get('/file/:uid',(req,res)=>{
-  File.findById(req.params.uid,(err,file)=>{
-    if (err) res.json({success: false, err:err});
-    if (!file) res.json({success:false, err: 'file not found'});
-    res.json({success:true,data:file});
-  })
-})
-
-app.get('/file/:uid/download',(req,res)=>{
-  File.findById(req.params.uid,(err,file)=>{
-    if (err) return res.send(err);
-    if (!file) return res.send('file not found')
-    res.setHeader('Content-disposition', `attachment; filename=${file.name}`)
-    return res.send(file.content);
-  })
+    var readStream = fs.createReadStream(path);
+    // replaced all the event handlers with a simple call to readStream.pipe()
+    readStream.pipe(res);
+  }catch(err){
+    console.error(err);
+    res.status(404).send('the file does not exist');
+  }
 })
 
 app.get('/app.js',(req,res)=>{
