@@ -611,14 +611,20 @@ class ListFiles extends React.Component{
   }
   _updateProgress(pObj,remove){
     let p_bars = this.state.progress_bars;
-    for (var i = 0, p; p=p_bars[i]; i++) {
+    let addPBar = (function(){
+      p_bars.push(pObj);
+      return this.setState({progress_bars:p_bars});
+    }).bind(this);
+
+    if(p_bars.length === 0){return addPBar()}
+
+    for (var i=0, p; p=p_bars[i]; i++) {
       if(pObj.id === p.id && pObj.name ===p.name){
         if(remove) p_bars.splice(i,1);
         else p_bars.splice(i,1,pObj);
-        return this.setState(p_bars);
+        return this.setState({progress_bars:p_bars});
       }else if(!p_bars[i+1]){
-        p_bars.push(pObj);
-        return this.setState(p_bars);
+        addPBar();
       }
     }
   }
@@ -639,9 +645,9 @@ class ListFiles extends React.Component{
       //   lastModifiedDate: f.lastModifiedDate
       // }
       console.log('Uploading file:',f);
-      if(f.size>20000000){
-        return alert('The file is too large (max. 20mb)')
-      }
+      // if(f.size>20000000){
+      //   return alert('The file is too large (max. 20mb)')
+      // }
       let progress = {
         id: Math.floor(Math.random()*100),
         name: f.name,
@@ -663,11 +669,13 @@ class ListFiles extends React.Component{
             uid: JSON.parse(xhr.response).uids[0].uid,
             uploadDate: (new Date()).toString()
           })
+          that._updateProgress(progress,true);
         }
       }
 
       xhr.upload.addEventListener('progress', (e)=>{
-        let percent = Math.ceil(e.loaded/e.total) * 100;
+        // console.log(e.loaded,e.total,e.loaded/e.total * 100);
+        let percent = Math.ceil(e.loaded/e.total * 100);
         progress.percent = percent;
         that._updateProgress(progress);
       });
@@ -688,7 +696,7 @@ class ListFiles extends React.Component{
       <div>
         {this._renderList(this.props.files,this.props.editing)}
         {fileInput}
-        {this.state.progress_bars}
+        {this.state.progress_bars.map(p=><UploadProgress key={p.id} name={p.name} percent={p.percent} />)}
       </div>
     );
   }
@@ -707,66 +715,15 @@ ListFiles.defaultProps = {
 }
 
 class UploadProgress extends React.Component{
-  constructor(props){
-    super(props);
-    this.state = {
-      progress: 0
-    }
-    this._upload = this._upload.bind(this)
-  }
-  componentDidMount(){
-    this._upload()
-  }
-  _upload(){
-    let that = this;
-
-    let updateProgress = function(e){
-      if(e.lengthComputable){
-        let percentComplete = e.loaded / e.total * 100;
-        // console.log(percentComplete);
-        that.setState({
-          progress: percentComplete
-        })
-      }else{
-        console.log('Unable to compute length');
-      }
-    }
-    let transferComplete = function(e){
-      console.log('transfer complete');
-    }
-    let transferFailed = function(e){
-      console.log('transfer failed');
-    }
-    let transferCanceled = function(e){
-      console.log('transfer cancelled');
-    }
-
-    let xhr = new XMLHttpRequest();
-    xhr.addEventListener('progress',updateProgress);
-    xhr.addEventListener("load", transferComplete);
-    xhr.addEventListener("error", transferFailed);
-    xhr.addEventListener("abort", transferCanceled);
-
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState == 4 && xhr.status == 200) {
-        var res = JSON.parse(xhr.responseText);
-        that.props._appendFile({name:that.props.file_name,uid:res.id})
-      }
-    };
-
-    xhr.open('POST','upload',true);
-    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-    xhr.send(JSON.stringify({name:escape(this.props.file_name),content:this.props.file_content}));
-  }
   render(){
-    return <progress value={this.state.progress.toString()} max="100" />
+    // console.log(this.props.name, this.props.percent);
+    return <div><label>{this.props.name}: <progress value={this.props.percent.toString()} max="100" /></label><br /></div>
   }
 }
 
 UploadProgress.propTypes = {
-  file_name: React.PropTypes.string,
-  file_content: React.PropTypes.string
+  name: React.PropTypes.string,
+  percent: React.PropTypes.number.isRequired
 }
 
  // #######                 ###
@@ -784,7 +741,7 @@ class FileItem extends React.Component {
   render(){
     let removeButton;
     if(this.props.editing) removeButton = <Icon type="times" onClick={this.props._removeFile.bind(this, this.props.uid)} />
-    console.log('FileItem props:', this.props);
+    // console.log('FileItem props:', this.props);
 
     return (
       <div>
