@@ -29,7 +29,7 @@ app.set('view engine', 'jade')
 
 // Initiate Database Connection
 if(process.env.NODE_ENV !== 'test'){
-  const uri = process.env.MONGO_URI || 'mongodb://swiftnote:swiftnote@dogen.mongohq.com:10080/epsclubs';
+  const uri = process.env.MONGO_URI || 'mongodb://localhost/swiftnote';
   console.log(`Mongo URI: ${uri}`);
   mongoose.connect(uri);
 }
