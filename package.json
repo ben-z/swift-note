@@ -22,7 +22,7 @@
     "cookie-parser": "~1.4.0",
     "jade": "~1.11.0",
     "express-graphql": "~0.4.5",
-    "moment": "~2.11.2",
+    "moment": "~2.19.3",
     "superagent": "~1.6.1",
     "object-assign": "~4.0.1",
     "body-parser": "~1.14.2",
